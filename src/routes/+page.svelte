@@ -1,2 +1,11 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p>
+<script>
+    let text = "test message";
+</script>
+
+<h1>TEst</h1>
+
+<form id="input">
+    <label for="input">Testing web rtc</label>
+    <textarea bind:value={text} />
+    <button>Submit</button>
+</form>
