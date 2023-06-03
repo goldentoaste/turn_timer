@@ -1,11 +1,7 @@
-<script>
-    let text = "test message";
-</script>
+<h1>
+    Home page
+</h1>
 
-<h1>TEst</h1>
 
-<form id="input">
-    <label for="input">Testing web rtc</label>
-    <textarea bind:value={text} />
-    <button>Submit</button>
-</form>
+<a href="/host">go to host</a>
+<a href="/client">go to client</a>
