@@ -21,7 +21,7 @@
         });
     }
 
-    $: if ($comReady) {
+    $: if ($comReady && channel === undefined) {
         console.log("come readu");
         peerConnection.ondatachannel = (e) => {
             console.log("on data channel at client");

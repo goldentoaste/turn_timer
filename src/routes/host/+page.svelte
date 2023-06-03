@@ -6,51 +6,36 @@
     let text = "test message";
     let receivedMessages: string[] = [];
 
-    let channel
-
+    let channel : RTCDataChannel;
+  
     function connect() {
         connectToSignalServer();
     }
 
-    function sendMsg() {
-        console.log("sending message: ", text)
-        dataChannel.send(text, );
-    }
-
-    $: if ($comReady) {
-        console.log("come readu");
-        peerConnection.ondatachannel = (e) => {
-            console.log("on data channel at client");
-            channel = e.channel;
-            channel.onopen = (o) => console.log("client channel opened");
+    function makeChannel(){
+        channel = peerConnection.createDataChannel("message");
+        channel.onopen = (o) => console.log("client channel opened");
             channel.onclose = (o) => console.log("onclose");
             channel.onmessage = (msg) => {
                 console.log("received data", msg.data);
                 receivedMessages.push(msg.data);
                 receivedMessages = receivedMessages;
             };
-        };
     }
 
-    $: if ($channelReady) {
-        console.log("come readu");
-     
-
-            dataChannel.onopen = (o) => console.log("host channel opened");
-            dataChannel.onclose = (o) => console.log("onclose");
-
-            dataChannel.onmessage = (msg) => {
-                console.log(msg.data);
-                receivedMessages.push(msg.data);
-                receivedMessages = receivedMessages;
-            };
-        
+    function sendMsg() {
+        console.log("sending message: ", text)
+        channel.send(text, );
     }
+
+
+
+
 </script>
 
 <h1>Host page</h1>
-
-<button on:click={connect}  disabled={dataChannel !== undefined}> Start Session </button>
+<button on:click={makeChannel}>Create channel</button>
+<button on:click={connect}  disabled={channel !== undefined && false}> Start Session </button>
 {#if $currentConnectionId}
     <p>Current call id is: {$currentConnectionId}</p>
 {:else}
@@ -60,7 +45,7 @@
 <form id="input">
     <label for="input">Message to send:</label>
     <textarea bind:value={text} rows="5" />
-    <button on:click={sendMsg} disabled={dataChannel === undefined}>Submit</button>
+    <button on:click={sendMsg} disabled={channel === undefined}>Submit</button>
 </form>
 
 <p>Received messages</p>

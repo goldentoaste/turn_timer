@@ -1,5 +1,17 @@
 
+<script>
+    import { onDestroy } from "svelte";
 
+    import { deleteDoc, doc} from "firebase/firestore";
+    import { currentConnectionId } from "$lib/stores";
+    import { db } from "$lib/firebase";
+
+    onDestroy(()=>{
+        if ($currentConnectionId){
+            deleteDoc(doc(db, `calls/${$currentConnectionId}`))
+        }
+    })
+</script>
 
 <div>
     <slot/>
