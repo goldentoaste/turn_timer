@@ -1,21 +1,94 @@
 import { app, db } from "$lib/firebase"
-import { addDoc, collection, doc, getDoc, onSnapshot, setDoc, updateDoc } from "firebase/firestore";
-import { channelReady, currentConnectionId } from "./stores";
+import { addDoc, collection, doc, getDoc, getDocs, onSnapshot, query, setDoc, updateDoc } from "firebase/firestore";
+import { channelReady, roomId } from "./stores";
 import { get } from "svelte/store";
 const connectionConfig: RTCConfiguration = {
     iceServers: [
-        {   
+        {
             urls: ['stun:stun1.l.google.com:19302', "stun:stun2.l.google.com:19302"]
         }
     ],
-    iceCandidatePoolSize: 10
+    iceCandidatePoolSize: 10,
+
 }
-let peerConnection: RTCPeerConnection;
-let dataChannel: RTCDataChannel;
 
 
-function initializeRTC() {
-    peerConnection = new RTCPeerConnection(connectionConfig);
+
+let connections: { [id: string]: RTCPeerConnection } = {};
+let outgoingChannels: RTCDataChannel[] = [];
+let incomingChannels: RTCDataChannel[] = [];
+let userId = undefined;
+
+async function createRoom() {
+
+    // make a nnew room in firebase, set the id
+    const roomDoc = await addDoc(collection(db, "rooms"), {});
+    roomId.set(roomDoc.id);
+
+}
+
+// when user created, send others a offer to start new call
+// when offer is received, create a new peer connection, set remote to offer, set local to a new anwser, send anwser back
+// when anwser is received, set the *existing* peer connection's remote to anwser, and stop here.
+
+// when ever offer and anwser is created, attack the associated ice candidates to the documents
+async function joinRoom(id: string) {
+
+    const roomDoc = await doc(db, `rooms/${id}`)
+    const users = collection(roomDoc, "users")
+
+    const currentUser = await addDoc(users, {})
+    userId = currentUser.id;
+    const currentOffers = collection(currentUser, "offers")
+    const currentAnwsers = collection(currentUser, "anwsers")
+
+    // make a connection for each existing user
+
+    const userDocs = await getDocs(query(users))
+
+    // give every user an offer, awaiting the resolution
+    await Promise.all(
+        userDocs.docs.map(async target => {
+
+            // skip the current user
+            if (target.id === userId) {
+                return;
+            }
+
+          
+            const targetOffers = collection(target.ref, `/offers`)
+            const connection = new RTCPeerConnection(connectionConfig);
+
+
+            // update the list of connections
+            connections[target.id] = connection;
+
+            // create offer
+            const offerDescription = await connection.createOffer();
+            await connection.setLocalDescription(offerDescription)
+
+
+            // send offer to target user
+            const offerForTarget = await addDoc(targetOffers, {
+                originId: userId,
+                sdp: offerDescription.sdp,
+                type: offerDescription.type
+            })
+            // attach ice when ready
+            const candidates = collection(offerForTarget, "candidates")
+            connection.onicecandidate = event => {
+                if (event.candidate) {
+                    addDoc(candidates, event.candidate.toJSON())
+                }
+            }
+            
+            // FINISH SENDING OFFERS //
+        })
+    )
+
+
+    // Behaviour for receiving offer
+    
 
 
 }
@@ -26,7 +99,7 @@ async function connectToSignalServer() {
     const callDoc = await addDoc(collection(db, "calls"), {});
     const offers = collection(callDoc, "offers");
     const anwsers = collection(callDoc, "anwsers");
-    currentConnectionId.set(callDoc.id);
+
 
     peerConnection.onicecandidate = (event) => {
         if (event.candidate) {
