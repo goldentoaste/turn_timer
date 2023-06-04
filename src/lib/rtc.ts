@@ -55,7 +55,7 @@ async function joinRoom(id: string) {
                 return;
             }
 
-          
+
             const targetOffers = collection(target.ref, `/offers`)
             const connection = new RTCPeerConnection(connectionConfig);
 
@@ -65,9 +65,7 @@ async function joinRoom(id: string) {
 
             // create offer
             const offerDescription = await connection.createOffer();
-            await connection.setLocalDescription(offerDescription)
-
-
+  
             // send offer to target user
             const offerForTarget = await addDoc(targetOffers, {
                 originId: userId,
@@ -81,14 +79,56 @@ async function joinRoom(id: string) {
                     addDoc(candidates, event.candidate.toJSON())
                 }
             }
-            
+            await connection.setLocalDescription(offerDescription)
+
+
+
             // FINISH SENDING OFFERS //
         })
     )
 
 
     // Behaviour for receiving offer
-    
+    onSnapshot(currentOffers, (snap) => {
+        // only detect the newly added offers
+        snap.docChanges().forEach(change => {
+            if (change.type == "added") {
+
+                const data = change.doc.data();
+                const targetAnwsers = collection(db, `rooms/${roomId}/users/${data.originId}/anwsers`)
+                const connection = new RTCPeerConnection(connectionConfig);
+                connections[data.originId] = connection
+                // offer should only be given by new players
+                connection.setRemoteDescription({
+                    sdp: data.sdp,
+                    type: data.type
+                })
+
+                const offerIceCandidates = collection(change.doc.ref, "candidates");
+                // add new ice of the offer
+                onSnapshot(offerIceCandidates, (snap) => {
+                    snap.docChanges().forEach(change => {
+                        connection.addIceCandidate(change.doc.data())
+                    })
+                })
+
+                const anwser = await connection.createAnswer()
+                const anwserDoc = addDoc(targetAnwsers, {
+                    sdp:anwser.sdp,
+                    type: anwser.type,
+                    originId:userId
+                })
+                // create anwser, make ice for answer
+                connection.onicecandidate = (event) => {
+                    if (event.candidate) {
+                        // addDoc(targetAnwsers,)
+                    }
+                }
+            }
+        })
+    })
+
+
 
 
 }
