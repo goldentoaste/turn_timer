@@ -1,55 +1,54 @@
 <script lang="ts">
-    import { joinChat, peerConnection } from "$lib/rtc";
+    import { joinRoom, incomingChannels, outgoingChannels } from "$lib/rtc";
     import { onMount } from "svelte";
-    import { comReady } from "$lib/stores";
-    let chatId;
-    let message;
 
-    let channel: RTCDataChannel = undefined;
+    let roomId: string;
+    let message;
+    let connected = false;
 
     let receivedMessages: string[] = [];
 
     function sendMsg() {
-        channel.send(message);
+        for (const [_, channel] of Object.entries($outgoingChannels)) {
+            console.log(`sending message: ${message}`);
+
+            channel.send(message);
+        }
     }
 
     function join() {
-        joinChat(chatId).then(() => {
-            peerConnection.getStats().then((e) => {
-                console.log(e);
-            });
-        });
+        if (roomId) {
+            joinRoom(roomId).then((e) => (connected = true));
+        }
     }
 
-    $: if ($comReady && channel === undefined) {
-        console.log("come readu");
-        peerConnection.ondatachannel = (e) => {
+    incomingChannels.subscribe((event) => {
+        for (const [key, channel] of Object.entries(
+            incomingChannels.getDelta()
+        )) {
             console.log("on data channel at client");
-            channel = e.channel;
+
             channel.onopen = (o) => console.log("client channel opened");
             channel.onclose = (o) => console.log("onclose");
             channel.onmessage = (msg) => {
-                console.log("received data", msg.data);
-                receivedMessages.push(msg.data);
-                receivedMessages = receivedMessages;
+                console.log(`received data from ${key}`, msg.data);
+
+                receivedMessages = [
+                    ...receivedMessages,
+                    `${key} says: ${msg.data}`,
+                ];
             };
-        };
-    }
+        }
+    });
 </script>
 
 <h1>Client Page</h1>
 
 <div class="content">
     <label for="callId">Chat id:</label>
-    <input
-        type="text"
-        name="callId"
-        id="callid"
-        bind:value={chatId}
-        disabled={channel !== undefined}
-    />
+    <input type="text" name="callId" id="callid" bind:value={roomId} />
 
-    <button on:click={join} disabled={channel !== undefined}>Join Chat</button>
+    <button on:click={join}>Join Chat</button>
 
     <label for="message">Message to send:</label>
     <textarea
@@ -59,9 +58,7 @@
         rows="5"
         bind:value={message}
     />
-    <button on:click={sendMsg} disabled={channel === undefined}
-        >Send Message</button
-    >
+    <button on:click={sendMsg}>Send Message</button>
 
     <p>Received message:</p>
 

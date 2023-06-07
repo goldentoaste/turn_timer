@@ -1,7 +1,7 @@
 import { app, db } from "$lib/firebase"
 import { addDoc, collection, doc, getDoc, getDocs, onSnapshot, query, setDoc, updateDoc } from "firebase/firestore";
-import { channelReady, roomId } from "./stores";
-import { get } from "svelte/store";
+import { roomId } from "./stores";
+import deltaStore from "./deltaStore";
 const connectionConfig: RTCConfiguration = {
     iceServers: [
         {
@@ -15,8 +15,8 @@ const connectionConfig: RTCConfiguration = {
 
 
 let connections: { [id: string]: RTCPeerConnection } = {};
-let outgoingChannels: RTCDataChannel[] = [];
-let incomingChannels: RTCDataChannel[] = [];
+let outgoingChannels = deltaStore<RTCDataChannel>({});
+let incomingChannels = deltaStore<RTCDataChannel>({});
 let userId = undefined;
 
 async function createRoom() {
@@ -58,14 +58,15 @@ async function joinRoom(id: string) {
 
             const targetOffers = collection(target.ref, `/offers`)
             const connection = new RTCPeerConnection(connectionConfig);
-
+            outgoingChannels.push(target.id, connection.createDataChannel("messages"))
+     
 
             // update the list of connections
             connections[target.id] = connection;
 
             // create offer
             const offerDescription = await connection.createOffer();
-  
+
             // send offer to target user
             const offerForTarget = await addDoc(targetOffers, {
                 originId: userId,
@@ -79,151 +80,197 @@ async function joinRoom(id: string) {
                     addDoc(candidates, event.candidate.toJSON())
                 }
             }
-            await connection.setLocalDescription(offerDescription)
-
-
-
+            await connection.setLocalDescription(offerDescription);
             // FINISH SENDING OFFERS //
         })
     )
 
 
     // Behaviour for receiving offer
-    onSnapshot(currentOffers, (snap) => {
+    onSnapshot(currentOffers, async (snap) => {
         // only detect the newly added offers
-        snap.docChanges().forEach(change => {
-            if (change.type == "added") {
+        await Promise.all(
+            snap.docChanges().map(
+                async change => {
+                    if (change.type == "added") {
 
-                const data = change.doc.data();
-                const targetAnwsers = collection(db, `rooms/${roomId}/users/${data.originId}/anwsers`)
-                const connection = new RTCPeerConnection(connectionConfig);
-                connections[data.originId] = connection
-                // offer should only be given by new players
-                connection.setRemoteDescription({
-                    sdp: data.sdp,
-                    type: data.type
-                })
+                        const data = change.doc.data();
+                        const targetAnwsers = collection(db, `rooms/${roomId}/users/${data.originId}/anwsers`)
+                        const connection = new RTCPeerConnection(connectionConfig);
+                        connections[data.originId] = connection
+                        // offer should only be given by new players
+                        connection.setRemoteDescription({
+                            sdp: data.sdp,
+                            type: data.type
+                        })
 
-                const offerIceCandidates = collection(change.doc.ref, "candidates");
-                // add new ice of the offer
-                onSnapshot(offerIceCandidates, (snap) => {
-                    snap.docChanges().forEach(change => {
-                        connection.addIceCandidate(change.doc.data())
-                    })
-                })
+                        const offerIceCandidates = collection(change.doc.ref, "candidates");
+                        // add new ice of the offer
+                        onSnapshot(offerIceCandidates, (snap) => {
+                            snap.docChanges().forEach(change => {
+                                connection.addIceCandidate(change.doc.data())
+                            })
+                        })
 
-                const anwser = await connection.createAnswer()
-                const anwserDoc = addDoc(targetAnwsers, {
-                    sdp:anwser.sdp,
-                    type: anwser.type,
-                    originId:userId
-                })
-                // create anwser, make ice for answer
-                connection.onicecandidate = (event) => {
-                    if (event.candidate) {
-                        // addDoc(targetAnwsers,)
+                        const anwser = await connection.createAnswer()
+                        const anwserDoc = await addDoc(targetAnwsers, {
+                            sdp: anwser.sdp,
+                            type: anwser.type,
+                            originId: userId
+                        })
+                        const anwserCandiatesCollection = collection(anwserDoc, "candidates")
+                        // create anwser, make ice for answer
+                        connection.onicecandidate = (event) => {
+                            if (event.candidate) {
+                                addDoc(anwserCandiatesCollection, event.candidate.toJSON())
+                            }
+                        }
                     }
                 }
-            }
-        })
+            )
+        )
+    })
+    // END OF, receving offer, sending anwser back to offerer
+
+
+    // Behaviour for receiving an anwser 
+    onSnapshot(currentAnwsers, async (snap) => {
+        await Promise.all(
+            snap.docChanges().map(
+                async change => {
+                    if (change.type == "added") {
+                        const data = change.doc.data();
+                        const originId = data.originId;
+
+                        let connection: RTCPeerConnection = undefined;
+                        try {
+                            connection = connections[originId];
+                        }
+                        catch (err) {
+                            console.log("error in receiving anwser, prob unable to find remote id", err)
+                            return;
+                        }
+                        // local description should already be set.
+                        connection.setRemoteDescription({
+                            sdp: data.sdp,
+                            type: data.type
+                        });
+                        connection.ondatachannel = event => {
+                            if (event.channel) {
+                                incomingChannels.push(originId, event.channel)
+                              
+                            }
+                        }
+
+                        const candidates = collection(change.doc.ref, "candidates")
+                        onSnapshot(candidates, snap => {
+                            snap.docChanges().forEach(change => {
+                                if (change.type == "added") {
+                                    connection.addIceCandidate(change.doc.data())
+                                }
+                            })
+                        })
+                    }
+                }
+            )
+        )
     })
 
 
-
-
+    // worry about data channels later
 }
 
 
-async function connectToSignalServer() {
+// async function connectToSignalServer() {
 
-    const callDoc = await addDoc(collection(db, "calls"), {});
-    const offers = collection(callDoc, "offers");
-    const anwsers = collection(callDoc, "anwsers");
-
-
-    peerConnection.onicecandidate = (event) => {
-        if (event.candidate) {
-            addDoc(offers, event.candidate.toJSON());
-        }
-    }
-
-    const offerDesc = await peerConnection.createOffer();
-    await peerConnection.setLocalDescription(offerDesc);
+//     const callDoc = await addDoc(collection(db, "calls"), {});
+//     const offers = collection(callDoc, "offers");
+//     const anwsers = collection(callDoc, "anwsers");
 
 
-    const offer = {
-        sdp: offerDesc.sdp,
-        type: offerDesc.type
-    }
+//     peerConnection.onicecandidate = (event) => {
+//         if (event.candidate) {
+//             addDoc(offers, event.candidate.toJSON());
+//         }
+//     }
 
-    await setDoc(callDoc, { offer });
-
-    onSnapshot(callDoc, (snap) => {
-
-        const data = snap.data();
-        console.log("doc changed", data)
-        //!peerConnection.currentRemoteDescription &&
-        if (data?.anwser) {
-            const anwserDesc = new RTCSessionDescription(data.anwser);
-            peerConnection.setRemoteDescription(anwserDesc).catch(e => {
-                console.log("Host set remote", e)
-            });
-        }
-    });
-    onSnapshot(anwsers, (snap) => {
-        snap.docChanges().forEach(change => {
-            if (change.type == "added") {
-                const candidate = new RTCIceCandidate(change.doc.data())
-                peerConnection.addIceCandidate(candidate);
-            }
-        })
-    })
-}
+//     const offerDesc = await peerConnection.createOffer();
+//     await peerConnection.setLocalDescription(offerDesc);
 
 
-async function joinChat(id: string) {
+//     const offer = {
+//         sdp: offerDesc.sdp,
+//         type: offerDesc.type
+//     }
+
+//     await setDoc(callDoc, { offer });
+
+//     onSnapshot(callDoc, (snap) => {
+
+//         const data = snap.data();
+//         console.log("doc changed", data)
+//         //!peerConnection.currentRemoteDescription &&
+//         if (data?.anwser) {
+//             const anwserDesc = new RTCSessionDescription(data.anwser);
+//             peerConnection.setRemoteDescription(anwserDesc).catch(e => {
+//                 console.log("Host set remote", e)
+//             });
+//         }
+//     });
+//     onSnapshot(anwsers, (snap) => {
+//         snap.docChanges().forEach(change => {
+//             if (change.type == "added") {
+//                 const candidate = new RTCIceCandidate(change.doc.data())
+//                 peerConnection.addIceCandidate(candidate);
+//             }
+//         })
+//     })
+// }
 
 
-    const callDoc = doc(db, `calls/${id}`);
-    const anwsers = collection(callDoc, "anwsers");
-    const offers = collection(callDoc, "offers");
+// async function joinChat(id: string) {
 
-    peerConnection.onicecandidate = event => {
-        if (event.candidate) {
-            addDoc(anwsers, event.candidate.toJSON())
-        }
-    }
 
-    const callData: any = (await getDoc(callDoc)).data();
+//     const callDoc = doc(db, `calls/${id}`);
+//     const anwsers = collection(callDoc, "anwsers");
+//     const offers = collection(callDoc, "offers");
 
-    const offerDesc = callData.offer;
+//     peerConnection.onicecandidate = event => {
+//         if (event.candidate) {
+//             addDoc(anwsers, event.candidate.toJSON())
+//         }
+//     }
 
-    await peerConnection.setRemoteDescription(new RTCSessionDescription(offerDesc)).then(
-        e => console.log("client set remote")
-    )
-    const anwserDesc = await peerConnection.createAnswer();
-    await peerConnection.setLocalDescription(anwserDesc).then(
-        e => console.log("client set local")
-    )
+//     const callData: any = (await getDoc(callDoc)).data();
 
-    const anwser = {
-        type: anwserDesc.type,
-        sdp: anwserDesc.sdp
-    }
+//     const offerDesc = callData.offer;
 
-    await updateDoc(callDoc, { anwser });
+//     await peerConnection.setRemoteDescription(new RTCSessionDescription(offerDesc)).then(
+//         e => console.log("client set remote")
+//     )
+//     const anwserDesc = await peerConnection.createAnswer();
+//     await peerConnection.setLocalDescription(anwserDesc).then(
+//         e => console.log("client set local")
+//     )
 
-    onSnapshot(offers, snap => {
-        snap.docChanges().forEach(change => {
+//     const anwser = {
+//         type: anwserDesc.type,
+//         sdp: anwserDesc.sdp
+//     }
 
-            console.log("client adding new ice", change)
-            if (change.type === "added") {
-                let data = change.doc.data();
-                peerConnection.addIceCandidate(new RTCIceCandidate(data))
-            }
-        })
-    })
+//     await updateDoc(callDoc, { anwser });
 
-}
+//     onSnapshot(offers, snap => {
+//         snap.docChanges().forEach(change => {
 
-export { peerConnection, dataChannel, initializeRTC, connectToSignalServer, joinChat };
+//             console.log("client adding new ice", change)
+//             if (change.type === "added") {
+//                 let data = change.doc.data();
+//                 peerConnection.addIceCandidate(new RTCIceCandidate(data))
+//             }
+//         })
+//     })
+
+// }
+
+export { createRoom, joinRoom, incomingChannels, outgoingChannels, connections };

@@ -1,43 +1,54 @@
 <script lang="ts">
-    import { connectToSignalServer, peerConnection ,dataChannel} from "$lib/rtc";
-    import { currentConnectionId } from "$lib/stores";
+    import {
+        createRoom,
+        joinRoom,
+        incomingChannels,
+        outgoingChannels,
+    } from "$lib/rtc";
+    import { roomId } from "$lib/stores";
+
     import { onMount } from "svelte";
-    import { comReady, channelReady } from "$lib/stores";
+
+    let test = {
+        stff: 123,
+        dads: 1111,
+    };
     let text = "test message";
     let receivedMessages: string[] = [];
 
-    let channel : RTCDataChannel;
-  
     function connect() {
-        connectToSignalServer();
+        createRoom().then(() => joinRoom($roomId));
     }
 
-    function makeChannel(){
-        channel = peerConnection.createDataChannel("message");
-        channel.onopen = (o) => console.log("client channel opened");
-            channel.onclose = (o) => console.log("onclose");
-            channel.onmessage = (msg) => {
-                console.log("received data", msg.data);
-                receivedMessages.push(msg.data);
-                receivedMessages = receivedMessages;
+    incomingChannels.subscribe((event) => {
+        const delta = incomingChannels.getDelta();
+        for (const [key, dataChannel] of Object.entries(delta)) {
+            dataChannel.onopen = (event) => {
+                console.log(`${key} data channel opned`);
             };
-    }
+            dataChannel.onmessage = (e) => {
+                if (e.data) {
+                    receivedMessages = [
+                        ...receivedMessages,
+                        `${key} says: ${e.data}`,
+                    ];
+                }
+            };
+        }
+    });
 
     function sendMsg() {
-        console.log("sending message: ", text)
-        channel.send(text, );
+        for (const [_, channel] of Object.entries($outgoingChannels)) {
+            console.log(`sending message: ${text}`);
+            channel.send(text);
+        }
     }
-
-
-
-
 </script>
 
 <h1>Host page</h1>
-<button on:click={makeChannel}>Create channel</button>
-<button on:click={connect}  disabled={channel !== undefined && false}> Start Session </button>
-{#if $currentConnectionId}
-    <p>Current call id is: {$currentConnectionId}</p>
+<button on:click={connect}> Start Session </button>
+{#if $roomId}
+    <p>Current call id is: {$roomId}</p>
 {:else}
     <p>Current call have not started yet.</p>
 {/if}
@@ -45,7 +56,7 @@
 <form id="input">
     <label for="input">Message to send:</label>
     <textarea bind:value={text} rows="5" />
-    <button on:click={sendMsg} disabled={channel === undefined}>Submit</button>
+    <button on:click={sendMsg} disabled={$roomId === ""}>Submit</button>
 </form>
 
 <p>Received messages</p>
