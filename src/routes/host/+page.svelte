@@ -1,13 +1,10 @@
 <script lang="ts">
-    import { createRoom, joinRoom, dataChannels } from "$lib/rtc";
+    import { browser } from "$app/environment";
+    import { createRoom, joinRoom, dataChannels, cleanup } from "$lib/rtc";
     import { roomId } from "$lib/stores";
 
-    import { onMount } from "svelte";
+    import { onDestroy, onMount } from "svelte";
 
-    let test = {
-        stff: 123,
-        dads: 1111,
-    };
     let text = "test message";
     let receivedMessages: string[] = [];
 
@@ -40,6 +37,13 @@
             channel.send(text);
         }
     }
+
+
+    
+    onDestroy(()=>{
+        if (browser)
+        cleanup();
+    })
 </script>
 
 <h1>Host page</h1>

@@ -1,12 +1,15 @@
 <script>
+    import { browser } from "$app/environment";
     import initAll from "$lib/init";
 
  
-    import { onMount } from "svelte";
+    import { onMount,onDestroy } from "svelte";
 
     onMount(() => {
         initAll()
     });
+
+
 </script>
 
 
