@@ -16,7 +16,7 @@
     }
 
     dataChannels.subscribe((event) => {
-        console.log("at host",$dataChannels);
+        console.log("at host", $dataChannels);
         const delta = dataChannels.getDelta();
         for (const [key, channel] of Object.entries(delta)) {
             channel.onopen = (event) => {
@@ -34,13 +34,10 @@
     });
 
     function sendMsg() {
+        receivedMessages = [...receivedMessages, `you said: ${text}`];
         for (const [_, channel] of Object.entries($dataChannels)) {
             console.log(`sending message: ${text}`);
             channel.send(text);
-            receivedMessages = [
-                        ...receivedMessages,
-                        `you said: ${text}`,
-                    ];
         }
     }
 </script>

@@ -9,11 +9,12 @@
     let receivedMessages: string[] = [];
 
     function sendMsg() {
+        receivedMessages = [...receivedMessages, `you said: ${message}`];
         for (const [_, channel] of Object.entries($dataChannels)) {
             console.log(`sending message: ${message}`);
 
             channel.send(message);
-            receivedMessages = [...receivedMessages, `you said: ${message}`];
+         
         }
     }
 
