@@ -38,12 +38,10 @@
         }
     }
 
-
+    onDestroy(() => {
+        if (browser) cleanup();
+    });
     
-    onDestroy(()=>{
-        if (browser)
-        cleanup();
-    })
 </script>
 
 <h1>Host page</h1>
