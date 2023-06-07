@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { joinRoom, incomingChannels, outgoingChannels } from "$lib/rtc";
+    import { joinRoom, dataChannels } from "$lib/rtc";
     import { onMount } from "svelte";
 
     let roomId: string;
@@ -9,10 +9,11 @@
     let receivedMessages: string[] = [];
 
     function sendMsg() {
-        for (const [_, channel] of Object.entries($outgoingChannels)) {
+        for (const [_, channel] of Object.entries($dataChannels)) {
             console.log(`sending message: ${message}`);
 
             channel.send(message);
+            receivedMessages = [...receivedMessages, `you said: ${message}`];
         }
     }
 
@@ -22,10 +23,10 @@
         }
     }
 
-    incomingChannels.subscribe((event) => {
-        for (const [key, channel] of Object.entries(
-            incomingChannels.getDelta()
-        )) {
+    dataChannels.subscribe((event) => {
+        console.log("at client", $dataChannels);
+
+        for (const [key, channel] of Object.entries(dataChannels.getDelta())) {
             console.log("on data channel at client");
 
             channel.onopen = (o) => console.log("client channel opened");

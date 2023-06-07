@@ -2,6 +2,7 @@ import { app, db } from "$lib/firebase"
 import { addDoc, collection, doc, getDoc, getDocs, onSnapshot, query, setDoc, updateDoc } from "firebase/firestore";
 import { roomId } from "./stores";
 import deltaStore from "./deltaStore";
+import { get } from "svelte/store";
 const connectionConfig: RTCConfiguration = {
     iceServers: [
         {
@@ -15,8 +16,8 @@ const connectionConfig: RTCConfiguration = {
 
 
 let connections: { [id: string]: RTCPeerConnection } = {};
-let outgoingChannels = deltaStore<RTCDataChannel>({});
-let incomingChannels = deltaStore<RTCDataChannel>({});
+// let outgoingChannels = deltaStore<RTCDataChannel>({});
+let dataChannels = deltaStore<RTCDataChannel>({});
 let userId = undefined;
 
 async function createRoom() {
@@ -50,6 +51,7 @@ async function joinRoom(id: string) {
     await Promise.all(
         userDocs.docs.map(async target => {
 
+            console.log("target", target.id)
             // skip the current user
             if (target.id === userId) {
                 return;
@@ -58,8 +60,8 @@ async function joinRoom(id: string) {
 
             const targetOffers = collection(target.ref, `/offers`)
             const connection = new RTCPeerConnection(connectionConfig);
-            outgoingChannels.push(target.id, connection.createDataChannel("messages"))
-     
+            dataChannels.push(target.id, connection.createDataChannel("messages"))
+
 
             // update the list of connections
             connections[target.id] = connection;
@@ -75,9 +77,9 @@ async function joinRoom(id: string) {
             })
             // attach ice when ready
             const candidates = collection(offerForTarget, "candidates")
-            connection.onicecandidate = event => {
+            connection.onicecandidate = async event => {
                 if (event.candidate) {
-                    addDoc(candidates, event.candidate.toJSON())
+                    await addDoc(candidates, event.candidate.toJSON())
                 }
             }
             await connection.setLocalDescription(offerDescription);
@@ -95,7 +97,7 @@ async function joinRoom(id: string) {
                     if (change.type == "added") {
 
                         const data = change.doc.data();
-                        const targetAnwsers = collection(db, `rooms/${roomId}/users/${data.originId}/anwsers`)
+                        const targetAnwsers = collection(db, `rooms/${id}/users/${data.originId}/anwsers`)
                         const connection = new RTCPeerConnection(connectionConfig);
                         connections[data.originId] = connection
                         // offer should only be given by new players
@@ -103,11 +105,19 @@ async function joinRoom(id: string) {
                             sdp: data.sdp,
                             type: data.type
                         })
+                        connection.ondatachannel = event => {
+                            if (event.channel) {
+                                console.log("channel received")
+                                dataChannels.push(data.originId, event.channel)
+
+                            }
+                        }
 
                         const offerIceCandidates = collection(change.doc.ref, "candidates");
                         // add new ice of the offer
                         onSnapshot(offerIceCandidates, (snap) => {
                             snap.docChanges().forEach(change => {
+                                console.log("adding ice in received offer")
                                 connection.addIceCandidate(change.doc.data())
                             })
                         })
@@ -120,11 +130,13 @@ async function joinRoom(id: string) {
                         })
                         const anwserCandiatesCollection = collection(anwserDoc, "candidates")
                         // create anwser, make ice for answer
-                        connection.onicecandidate = (event) => {
+                        connection.onicecandidate = async (event) => {
                             if (event.candidate) {
-                                addDoc(anwserCandiatesCollection, event.candidate.toJSON())
+                                await addDoc(anwserCandiatesCollection, event.candidate.toJSON())
                             }
                         }
+
+                        connection.setLocalDescription(anwser)
                     }
                 }
             )
@@ -155,17 +167,13 @@ async function joinRoom(id: string) {
                             sdp: data.sdp,
                             type: data.type
                         });
-                        connection.ondatachannel = event => {
-                            if (event.channel) {
-                                incomingChannels.push(originId, event.channel)
-                              
-                            }
-                        }
+
 
                         const candidates = collection(change.doc.ref, "candidates")
                         onSnapshot(candidates, snap => {
                             snap.docChanges().forEach(change => {
                                 if (change.type == "added") {
+                                    console.log("adding ice in received anwsers")
                                     connection.addIceCandidate(change.doc.data())
                                 }
                             })
@@ -273,4 +281,7 @@ async function joinRoom(id: string) {
 
 // }
 
-export { createRoom, joinRoom, incomingChannels, outgoingChannels, connections };
+export {
+    createRoom, joinRoom, dataChannels,
+    connections
+};

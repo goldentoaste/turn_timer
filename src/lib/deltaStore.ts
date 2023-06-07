@@ -15,7 +15,8 @@ function deltaStore<T>(initial: { [key: string]: T }) {
         subscribe,
         push: (key: string, val: T) => {
             delta[key] = val;
-            update(obj => { return { ...obj, key: val } })
+            update(obj => {
+             obj[key] = val; return obj;    })
         },
         getDelta: () => {
             let temp = { ...delta }
