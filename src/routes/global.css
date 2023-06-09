@@ -5,7 +5,7 @@ body {
     --bg: #282828;
     --bg1: #3c3836;
     --bg2: #504945;
-
+    --bg3:#7c6f64;
     --fg: #ebdbb2;
     --fg1: #d5c4a1;
 
@@ -30,6 +30,8 @@ body {
     font-family: 'FiraMono', monospace;
     color: var(--fg);
     background-color: var(--bg);
+
+    padding: 4rem;
 }
 
 h1,
@@ -38,4 +40,9 @@ h3 {
     color: var(--orange);
     font-family: 'FiraMono', monospace;
 
+}
+
+
+pre{
+    border:2px var(--bg2) solid;
 }

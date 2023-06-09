@@ -8,6 +8,11 @@ content:{
     ...
 }
 `
+
+interface Message<T> {
+    type:string,
+    content:T
+}
 // the "content" can be then modeled by a typescript interface.
 
 // player info
@@ -18,6 +23,7 @@ interface PlayerInfo {
     name: string,
     id: string,
     hasPrio: boolean,
+    hasTrun:boolean,
     timeRemaining: number // in seconds
 }
 
@@ -35,4 +41,5 @@ interface PlayerOrder {
 
 // no info, to indicate game starts and clients should start keeping time.
 interface GameStart{}
+
 
