@@ -34,6 +34,12 @@
         cursor: pointer;
     }
 
+    .buttonRoot:active{
+        transform: scale(0.9);
+        filter: brightness(0.9);
+    }
+
+
     .wrapper {
         position: relative;
         border: var(--bg2) 2px solid;

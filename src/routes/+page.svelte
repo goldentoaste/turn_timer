@@ -1,4 +1,5 @@
 <script>
+    import { goto } from "$app/navigation";
     import Button from "$lib/components/Button.svelte";
 </script>
 
@@ -21,17 +22,28 @@
 <pre>
     <code>
     ^space::
-        {'{'}
+        {"{"}
             WinSetAlwaysOnTop -1, "A"
-        {'}'}
+        {"}"}
     </code>
 </pre>
 <div class="root">
     <div class="buttonHolder">
-        <Button>
+        <Button
+            on:click={() => {
+                goto("host/");
+            }}
+        >
             <h2>Host a Game</h2>
         </Button>
-        <Button>
+
+        <div class="divider" />
+
+        <Button
+            on:click={() => {
+                goto("client/");
+            }}
+        >
             <h2>Join a Lobby</h2>
         </Button>
     </div>
@@ -48,6 +60,12 @@
     .buttonHolder {
         display: flex;
         flex-direction: row;
-        gap: 2rem;
+        gap: 2.5rem;
+        margin: 4rem;
+    }
+
+    .divider {
+        width: 2px;
+        background-color: var(--bg3);
     }
 </style>

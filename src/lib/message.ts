@@ -30,7 +30,8 @@ interface PlayerInfo {
 // game rules
 interface GameRules {
     reserveTime: number,
-    bonusTime: number
+    bonusTime: number,
+    clutchTime:number
 }
 
 
