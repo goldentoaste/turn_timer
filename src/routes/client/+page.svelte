@@ -44,37 +44,7 @@
     });
 </script>
 
-<h1>Client Page</h1>
 
-<div class="content">
-    <label for="callId">Chat id:</label>
-    <input type="text" name="callId" id="callid" bind:value={roomId} />
-
-    <button on:click={join}>Join Chat</button>
-
-    <label for="message">Message to send:</label>
-    <textarea
-        name="message"
-        id="message"
-        cols="30"
-        rows="5"
-        bind:value={message}
-    />
-    <button on:click={sendMsg}>Send Message</button>
-
-    <p>Received message:</p>
-
-    <div class="received">
-        {#if receivedMessages.length == 0}
-            No message received yet
-        {/if}
-        {#each receivedMessages as m, index}
-            <p>
-                #{index}: {m}
-            </p>
-        {/each}
-    </div>
-</div>
 
 <style>
     .content {

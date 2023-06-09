@@ -44,45 +44,7 @@
     
 </script>
 
-<h1>Host page</h1>
-<button on:click={connect}> Start Session </button>
-{#if $roomId}
-    <p>Current call id is: {$roomId}</p>
-{:else}
-    <p>Current call have not started yet.</p>
-{/if}
-
-<form id="input">
-    <label for="input">Message to send:</label>
-    <textarea bind:value={text} rows="5" />
-    <button on:click={sendMsg} disabled={$roomId === ""}>Submit</button>
-</form>
-
-<p>Received messages</p>
-<div class="received">
-    {#if !receivedMessages.length}
-        No message received yet
-    {/if}
-    {#each receivedMessages as m, index}
-        <p>
-            #{index}: {m}
-        </p>
-    {/each}
-</div>
 
 <style>
-    form {
-        display: flex;
-        flex-direction: column;
-        max-width: 500px;
-    }
-
-    .received {
-        display: flex;
-        flex-direction: column;
-        border: black 2px solid;
-        padding: 1rem;
-        width: 500px;
-        height: 600px;
-    }
+ 
 </style>

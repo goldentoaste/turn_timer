@@ -1,0 +1,41 @@
+
+
+body {
+
+    --bg: #282828;
+    --bg1: #3c3836;
+    --bg2: #504945;
+
+    --fg: #ebdbb2;
+    --fg1: #d5c4a1;
+
+    --orange: #fe8019;
+    --orange-alt: #d67d0e;
+
+    --red: #fb4934;
+    --red-alt: #cc241d;
+
+    --green: #8ec07c;
+    --green-alt: #689d6a;
+
+    --blue: #83a598;
+    --blue-alt: #458588;
+
+    --yellow: #fabd2f;
+    --yellow-alt: #d79921;
+
+    --purple: #d3869b;
+    --puple-alt: #b16286;
+
+    font-family: 'FiraMono', monospace;
+    color: var(--fg);
+    background-color: var(--bg);
+}
+
+h1,
+h2,
+h3 {
+    color: var(--orange);
+    font-family: 'FiraMono', monospace;
+
+}
