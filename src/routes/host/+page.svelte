@@ -13,7 +13,7 @@
 
     let reserveTime = "600";
     let bonusTime = "120";
-    let clutchTime = "15";
+    let clutchTime = "30";
 </script>
 
 <h1>Hosting a game</h1>
@@ -31,12 +31,30 @@
 
 <!-- /////////////////////////////////// -->
 <h3>2. Set game rules</h3>
-
+<p>Note: when effects are resolving, no player's time to tickdown.
+    <br/>
+    Time should tick during when players are thinking/deciding what to play.
+</p>
 <div class="hGroup">
     Reserve Time:
     <InputField bind:value={reserveTime} />
     <InfoIcon text={`'Reserved Time' is only given to the player once when the game starts.
     When a new round starts this time is not refreshed.
+    `} />
+</div>
+
+<div class="hGroup">
+    Bonus Time:
+    <InputField bind:value={bonusTime} />
+    <InfoIcon text={`'Bonus Time' is refreshed whenever the player's turn starts.`}/>
+</div>
+
+<div class="hGroup">
+    Clutch Time:
+    <InputField bind:value={clutchTime} />
+    <InfoIcon text={`'Clutch Time' is given when any player who has run out of Reserve Time takes 
+    priority, so they will have at least clutch + bonus time. The intention is to 
+    always allow players to react and take prio regardless how large their time pool is.
     `} />
 </div>
 

@@ -18,7 +18,7 @@
         <div
             class="msg"
             in:fly={{
-                x: -10,
+                x: -20,
             }}
             out:fade={{ duration: 200 }}
         >
@@ -40,6 +40,7 @@
         justify-content: center;
         align-items: center;
         border: 2px solid var(--bg2);
+        cursor: pointer;
     }
 
     .msg {
@@ -47,14 +48,14 @@
         border: 2px solid var(--fg1);
 
         position: absolute;
-        left: calc(100% + 0.5rem);
+        left: calc(100% + 1rem);
         top: 50%;
         transform: translate(0, -50%);
         padding: 0.5rem;
 
 
         min-width: 400px;
-     
+        
     }
 
     .hovering {

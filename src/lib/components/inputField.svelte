@@ -6,9 +6,7 @@
     import { fade, fly } from "svelte/transition";
     let showMsg = false;
     function onClick() {
-        console.log("clicke1111d");
         if (disabled && value.length > 0) {
-            console.log("clicked");
             navigator.clipboard.writeText(value).then((e) => {
                 showMsg = true;
                 setTimeout(() => {
@@ -19,7 +17,6 @@
     }
 </script>
 
-
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div class="parent" on:click={onClick}>
     <input
@@ -28,7 +25,6 @@
         bind:value
         {disabled}
         class:clickable={disabled}
-        
     />
 
     {#if showMsg}
@@ -37,7 +33,7 @@
             in:fly={{
                 x: -10,
             }}
-            out:fade={{duration:200}}
+            out:fade={{ duration: 200 }}
         >
             Copied!
         </div>
@@ -45,15 +41,12 @@
 </div>
 
 <style>
-
-
-.parent {
-    align-self: stretch;
-    position: relative;
-    display: flex;
-}
+    .parent {
+        align-self: stretch;
+        position: relative;
+        display: flex;
+    }
     input {
-       
         all: unset;
         border: 2px var(--bg2) solid;
         background-color: var(--bg1);
@@ -82,7 +75,7 @@
         position: absolute;
         left: calc(100% + 0.5rem);
         top: 50%;
-        transform: translate(0,-50%);
+        transform: translate(0, -50%);
         padding: 0.5rem;
     }
 </style>
