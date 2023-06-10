@@ -1,6 +1,7 @@
 import { dataChannels } from "./rtc";
 
 import { get } from "svelte/store";
+import type { Message } from "./types";
 
 
 export function onAnyMessage(callback: (msg: Message<any>) => void) {

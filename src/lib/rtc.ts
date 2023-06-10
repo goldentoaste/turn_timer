@@ -3,6 +3,8 @@ import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, query,
 import { roomId, isHost, playerId } from "./stores";
 import deltaStore from "./deltaStore";
 import { get } from "svelte/store";
+import { MessageTypes, type Message } from "./types";
+import { addPlayer } from "./players";
 
 class DataChannels {
     channel: RTCDataChannel;
@@ -11,6 +13,8 @@ class DataChannels {
     index = 0;
     constructor(channel: RTCDataChannel, userName?: string) {
         this.channel = channel;
+        console.log("in data channel constructor");
+
         const msg = JSON.stringify({
             type: MessageTypes.PlayerJoined,
             content: {
@@ -33,11 +37,6 @@ class DataChannels {
         }
         channel.onmessage = this.onMessage
 
-        if (userName) {
-            this.onMessage({
-                data: msg
-            })
-        }
 
     }
 
@@ -242,6 +241,8 @@ async function joinRoom(id: string, userName: string) {
             )
         )
     })
+    addPlayer(get(playerId), userName);
+
 }
 
 

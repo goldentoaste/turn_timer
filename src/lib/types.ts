@@ -16,7 +16,7 @@ messages types:
 
 */
 
-enum MessageTypes {
+ const enum MessageTypes {
     PlayerJoined= "player_joined", // has player info
 
 }
@@ -52,7 +52,5 @@ interface PlayerOrder {
     players: string[]
 }
 
-// no info, to indicate game starts and clients should start keeping time.
-interface GameStart{}
 
-
+export {MessageTypes, type Message, type PlayerInfo, type GameRules, type PlayerOrder}
