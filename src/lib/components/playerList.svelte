@@ -8,7 +8,7 @@
 </script>
 
 <h3>Player List</h3>
-<div class="playerContainter">
+<div class="playerContainer">
     {#key playersChanged}
         {#each orderedPlayerId as id, index (id)}
             <div class="playerItem">

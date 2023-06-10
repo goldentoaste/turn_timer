@@ -60,7 +60,7 @@
     .decor {
         position: absolute;
         transition-property: width height;
-        transition-duration: 0.5s;
+        transition-duration: 0.3s;
         transition-timing-function: ease-out;
 
         background-color: var(--orange-alt);

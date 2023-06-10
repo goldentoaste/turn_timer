@@ -68,4 +68,9 @@
         width: 2px;
         background-color: var(--bg3);
     }
+
+
+    pre {
+        max-width: 500px;
+    }
 </style>

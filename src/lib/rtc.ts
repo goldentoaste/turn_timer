@@ -9,15 +9,16 @@ import { addPlayer } from "./players";
 class DataChannels {
     channel: RTCDataChannel;
 
-    callbacks: { [key: number]: ((msg: Message) => void) } = {};
+    callbacks: { [key: number]: ((msg: Message) => void) };
     index = 0;
     constructor(channel: RTCDataChannel, userName?: string) {
         this.channel = channel;
+        this.callbacks = {};
         console.log("in data channel constructor");
 
         const msg = JSON.stringify({
             type: MessageTypes.PlayerJoined,
-            origin:get(playerId),
+            origin: get(playerId),
             content: {
                 id: get(playerId),
                 name: userName
@@ -25,9 +26,7 @@ class DataChannels {
         });
         channel.onopen = (e) => {
             console.log("channel opened", channel);
-
             if (userName) {
-
                 channel.send(
                     msg
                 )
@@ -36,20 +35,23 @@ class DataChannels {
         channel.onclose = (e) => {
             console.log("channel onclose", channel);
         }
-        channel.onmessage = this.onMessage
-
-
+        channel.onmessage = (e)=>{this.onMessage(e)}
+     
     }
 
 
     subscribe(callback: (msg: Message) => void) {
         this.index += 1;
+     
         this.callbacks[this.index] = callback
+
     }
 
     onMessage(e: MessageEvent<any> | any) {
         if (!e.data) return;
         const obj: Message = JSON.parse(e.data);
+        console.log(this);
+        
         for (const [_, callback] of Object.entries(this.callbacks)) {
             callback(obj);
         }

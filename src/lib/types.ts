@@ -16,15 +16,15 @@ messages types:
 
 */
 
- const enum MessageTypes {
-    PlayerJoined= "player_joined", // has player info
-
+const enum MessageTypes {
+    PlayerJoined = "player_joined", // has player info
+    PlayerInfoResponse = "player_response",
 }
 
 interface Message {
-    type:string,
-    origin:string,
-    content:any
+    type: string,
+    origin: string,
+    content: any
 }
 // the "content" can be then modeled by a typescript interface.
 
@@ -36,7 +36,7 @@ interface PlayerInfo {
     name: string,
     id: string,
     hasPrio?: boolean,
-    hasTurn?:boolean,
+    hasTurn?: boolean,
     timeRemaining?: number // in seconds
 }
 
@@ -44,7 +44,7 @@ interface PlayerInfo {
 interface GameRules {
     reserveTime: number,
     bonusTime: number,
-    clutchTime:number
+    clutchTime: number
 }
 
 
@@ -54,4 +54,4 @@ interface PlayerOrder {
 }
 
 
-export {MessageTypes, type Message, type PlayerInfo, type GameRules, type PlayerOrder}
+export { MessageTypes, type Message, type PlayerInfo, type GameRules, type PlayerOrder }

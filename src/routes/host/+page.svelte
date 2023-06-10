@@ -3,6 +3,7 @@
     import Button from "$lib/components/Button.svelte";
     import InfoIcon from "$lib/components/infoIcon.svelte";
     import InputField from "$lib/components/inputField.svelte";
+    import PlayerList from "$lib/components/playerList.svelte";
     import { orderedPlayerId, players } from "$lib/players";
     import { createRoom, joinRoom, dataChannels, cleanup } from "$lib/rtc";
     import { playerId, playersChanged, roomId } from "$lib/stores";
@@ -16,6 +17,11 @@
     let reserveTime = "600";
     let bonusTime = "120";
     let clutchTime = "30";
+
+
+    $: if ($playersChanged || !$playersChanged){
+        console.log(orderedPlayerId);
+    }
 </script>
 
 <h1>Hosting a game</h1>
@@ -97,14 +103,9 @@
 </div>
 
 <!-- /////////////////////////////////// -->
-<p>players</p>
-<div class="player">
-    {#key playersChanged}
-        {#each orderedPlayerId as id (id)}
-            <p>{players[id].name}</p>
-        {/each}
-    {/key}
-</div>
+<PlayerList>
+    
+</PlayerList>
 
 <style>
     .divider {
