@@ -26,7 +26,9 @@ function addPlayer(id: string, name: string) {
         name: name,
         hasPrio: false,
         hasTurn: false,
-        timeRemaining: 0
+        reserveTime:0,
+        bonusTime:0,
+        clutchTime:0
     }
     orderedPlayerId.push(id)
     playersChanged.set(!get(playersChanged));

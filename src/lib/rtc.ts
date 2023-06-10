@@ -1,7 +1,7 @@
 import { app, db } from "$lib/firebase"
 import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, query, setDoc, updateDoc } from "firebase/firestore";
 import { roomId, isHost, playerId } from "./stores";
-import deltaStore from "./deltaStore";
+import {deltaStore} from "./customStores";
 import { get } from "svelte/store";
 import { MessageTypes, type Message } from "./types";
 import { addPlayer, players } from "./players";

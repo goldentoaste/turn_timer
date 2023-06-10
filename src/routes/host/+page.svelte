@@ -6,7 +6,14 @@
     import PlayerList from "$lib/components/playerList.svelte";
     import { orderedPlayerId, players } from "$lib/players";
     import { createRoom, joinRoom, dataChannels, cleanup } from "$lib/rtc";
-    import { playerId, playersChanged, roomId } from "$lib/stores";
+    import {
+        playerId,
+        playersChanged,
+        roomId,
+        bonusTimeStore,
+        clutchTimeStore,
+        reserveTimeStore,
+    } from "$lib/stores";
     import { onDestroy, onMount } from "svelte";
 
     onDestroy(() => {
@@ -14,12 +21,11 @@
     });
 
     let playerName = "";
-    let reserveTime = "600";
-    let bonusTime = "120";
-    let clutchTime = "30";
+    $reserveTimeStore = "600";
+    $bonusTimeStore = "120";
+    $clutchTimeStore = "30";
 
-
-    $: if ($playersChanged || !$playersChanged){
+    $: if ($playersChanged || !$playersChanged) {
         console.log(orderedPlayerId);
     }
 </script>
@@ -47,7 +53,7 @@
 <div class="rules">
     <span>Reserve Time:</span>
     <InputField
-        bind:value={reserveTime}
+        bind:value={$reserveTimeStore}
         suffix="seconds"
         pattern={"[1-9][0-9]{0,3}"}
     />
@@ -58,7 +64,7 @@
     />
     <span>Bonus Time:</span>
     <InputField
-        bind:value={bonusTime}
+        bind:value={$bonusTimeStore}
         suffix="seconds"
         pattern={"[1-9][0-9]{0,3}"}
     />
@@ -68,7 +74,7 @@
 
     <span>Clutch Time:</span>
     <InputField
-        bind:value={clutchTime}
+        bind:value={$clutchTimeStore}
         suffix="seconds"
         pattern={"[1-9][0-9]{0,3}"}
     />
@@ -103,12 +109,11 @@
 </div>
 
 <!-- /////////////////////////////////// -->
-<PlayerList canArrange={true}>
-    
-</PlayerList>
+<PlayerList canArrange={true} />
 
 <p>
-    If all players has joined, arrange the players into the correct playing order, then click on start.
+    If all players has joined, arrange the players into the correct playing
+    order, then click on start.
 </p>
 
 <Button style="margin:2rem; margin-left:0;">
@@ -136,8 +141,7 @@
         gap: 0.5rem;
     }
 
-
-    h2{
+    h2 {
         margin: 0.5rem;
     }
 </style>

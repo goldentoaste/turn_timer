@@ -19,7 +19,8 @@ messages types:
 const enum MessageTypes {
     PlayerJoined = "player_joined", // has player info
     PlayerInfoResponse = "player_response",
-    PlayerOrder = "player_order"
+  
+    StartGame = "start_game"
 }
 
 interface Message {
@@ -38,21 +39,21 @@ interface PlayerInfo {
     id: string,
     hasPrio?: boolean,
     hasTurn?: boolean,
-    timeRemaining?: number // in seconds
+    reserveTime?:number,
+    bonusTime? : number,
+    clutchTime?:number
 }
 
-// game rules
-interface GameRules {
+// game rules, player order, and to indicate starting game.
+interface StartGame {
     reserveTime: number,
     bonusTime: number,
-    clutchTime: number
+    clutchTime: number,
+    playerOrder: string[],
 }
 
 
-// just a list of player ids ordered by their playing order.
-interface PlayerOrder {
-    players: string[]
-}
 
 
-export { MessageTypes, type Message, type PlayerInfo, type GameRules, type PlayerOrder }
+
+export { MessageTypes, type Message, type PlayerInfo, type StartGame }

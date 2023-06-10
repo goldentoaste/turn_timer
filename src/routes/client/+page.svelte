@@ -9,6 +9,12 @@
     let playerName = "";
 </script>
 
+<h1>
+    Joining a game
+</h1>
+
+
+<p>Pick your player name and paste in room id to join.</p>
 <div class="hGroup">
     <InputField bind:value={playerName} placeholder="Player name..." />
     <InputField bind:value={$roomId} placeholder="Room id..." />
@@ -23,6 +29,15 @@
         <span>Join Lobby</span>
     </Button>
 </div>
+
+
+<h3>
+    Player List
+</h3>
+<p>
+    Players who are already in the lobby will be displayed here once you connect. <br/>
+    Rules, player order, decided when the host starts the game, and will not be displayed here for now. :^(
+</p>
 
 <PlayerList />
 

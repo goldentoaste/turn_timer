@@ -16,7 +16,8 @@ function deltaStore<T>(initial: { [key: string]: T }) {
         push: (key: string, val: T) => {
             delta[key] = val;
             update(obj => {
-             obj[key] = val; return obj;    })
+                obj[key] = val; return obj;
+            })
         },
         getDelta: () => {
             let temp = { ...delta }
@@ -24,7 +25,8 @@ function deltaStore<T>(initial: { [key: string]: T }) {
             return temp;
         }
     }
-
 }
 
-export default deltaStore;
+
+
+export { deltaStore };
