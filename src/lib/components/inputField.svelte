@@ -2,6 +2,8 @@
     export let value = "";
     export let disabled = false;
     export let placeholder = ">_";
+    export let suffix = "";
+    export let pattern = "";
 
     import { fade, fly } from "svelte/transition";
     let showMsg = false;
@@ -15,6 +17,15 @@
             });
         }
     }
+
+    let inputField;
+    function checkInput(event) {
+        if (inputField.checkValidity()) {
+            value = inputField.value;
+        } else {
+            inputField.value = value;
+        }
+    }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -22,9 +33,12 @@
     <input
         type="text"
         {placeholder}
-        bind:value
+        bind:this={inputField}
         {disabled}
         class:clickable={disabled}
+        {pattern}
+        on:input={checkInput}
+        {value}
     />
 
     {#if showMsg}
@@ -38,6 +52,8 @@
             Copied!
         </div>
     {/if}
+
+    <div class="suffix">{suffix}</div>
 </div>
 
 <style>
@@ -77,5 +93,16 @@
         top: 50%;
         transform: translate(0, -50%);
         padding: 0.5rem;
+    }
+
+    .suffix {
+        position: absolute;
+        right: 0.25rem;
+
+        z-index: 1;
+        top: 50%;
+
+        transform: translate(0, -50%);
+        color: var(--bg2);
     }
 </style>

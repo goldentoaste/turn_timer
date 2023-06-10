@@ -55,6 +55,7 @@
 
 
         min-width: 400px;
+        pointer-events: none;
         
     }
 

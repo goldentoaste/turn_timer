@@ -9,6 +9,18 @@ content:{
 }
 `
 
+
+/*
+messages types:
+
+
+*/
+
+enum MessageTypes {
+    PlayerJoined= "player_joined", // has player info
+
+}
+
 interface Message<T> {
     type:string,
     content:T
@@ -22,9 +34,9 @@ interface Message<T> {
 interface PlayerInfo {
     name: string,
     id: string,
-    hasPrio: boolean,
-    hasTrun:boolean,
-    timeRemaining: number // in seconds
+    hasPrio?: boolean,
+    hasTurn?:boolean,
+    timeRemaining?: number // in seconds
 }
 
 // game rules

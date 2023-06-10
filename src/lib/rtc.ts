@@ -3,6 +3,45 @@ import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, query,
 import { roomId, isHost, playerId } from "./stores";
 import deltaStore from "./deltaStore";
 import { get } from "svelte/store";
+
+class DataChannels {
+    channel: RTCDataChannel;
+
+    callbacks: { [key: number]: ((msg: Message<any>) => void) } = {};
+    index = 0;
+    constructor(channel: RTCDataChannel) {
+        this.channel = channel;
+        channel.onopen = (e) => {
+            console.log("channel opened", channel);
+        }
+        channel.onclose = (e) => {
+            console.log("channel onclose", channel);
+        }
+        channel.onmessage = this.onMessage
+
+    }
+
+
+    subscribe(callback: (msg: Message<any>) => void) {
+        this.index += 1;
+        this.callbacks[this.index] = callback
+    }
+
+    onMessage(e: MessageEvent<any>) {
+        if (!e.data) return;
+        const obj: Message<any> = JSON.parse(e.data);
+        for (const [_, callback] of Object.entries(this.callbacks)) {
+            callback(obj);
+        }
+    }
+
+    send(data: string) {
+        this.channel.send(data);
+    }
+}
+
+
+
 const connectionConfig: RTCConfiguration = {
     iceServers: [
         {
@@ -10,14 +49,12 @@ const connectionConfig: RTCConfiguration = {
         }
     ],
     iceCandidatePoolSize: 10,
-
 }
-
 
 
 let connections: { [id: string]: RTCPeerConnection } = {};
 // let outgoingChannels = deltaStore<RTCDataChannel>({});
-let dataChannels = deltaStore<RTCDataChannel>({});
+let dataChannels = deltaStore<DataChannels>({});
 let userId = undefined;
 
 async function createRoom() {
@@ -41,6 +78,7 @@ async function joinRoom(id: string) {
 
     const currentUser = await addDoc(users, {})
     userId = currentUser.id;
+    playerId.set(userId);
     const currentOffers = collection(currentUser, "offers")
     const currentAnwsers = collection(currentUser, "anwsers")
 
@@ -61,7 +99,7 @@ async function joinRoom(id: string) {
 
             const targetOffers = collection(target.ref, `/offers`)
             const connection = new RTCPeerConnection(connectionConfig);
-            dataChannels.push(target.id, connection.createDataChannel("messages"))
+            dataChannels.push(target.id, new DataChannels(connection.createDataChannel("messages")))
 
 
             // update the list of connections
@@ -109,7 +147,7 @@ async function joinRoom(id: string) {
                         connection.ondatachannel = event => {
                             if (event.channel) {
                                 console.log("channel received")
-                                dataChannels.push(data.originId, event.channel)
+                                dataChannels.push(data.originId, new DataChannels(event.channel))
 
                             }
                         }
@@ -187,11 +225,11 @@ async function joinRoom(id: string) {
 }
 
 
-async function cleanup(){
-    if (get(isHost) && get(roomId)){
+async function cleanup() {
+    if (get(isHost) && get(roomId)) {
         await deleteDoc(doc(db, `rooms/${get(roomId)}`))
     }
-    for(const [_, connection] of Object.entries(connections)){
+    for (const [_, connection] of Object.entries(connections)) {
         connection.close()
     }
 }

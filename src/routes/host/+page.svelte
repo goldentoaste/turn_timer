@@ -31,34 +31,48 @@
 
 <!-- /////////////////////////////////// -->
 <h3>2. Set game rules</h3>
-<p>Note: when effects are resolving, no player's time to tickdown.
+<p>Note: when effects are resolving, no player's time should tick down.
     <br/>
     Time should tick during when players are thinking/deciding what to play.
 </p>
-<div class="hGroup">
-    Reserve Time:
-    <InputField bind:value={reserveTime} />
+<div class="rules">
+   <span>Reserve Time:</span> 
+    <InputField bind:value={reserveTime} suffix="seconds" pattern={"[1-9][0-9]{0,3}"}/>
     <InfoIcon text={`'Reserved Time' is only given to the player once when the game starts.
     When a new round starts this time is not refreshed.
     `} />
-</div>
-
-<div class="hGroup">
-    Bonus Time:
-    <InputField bind:value={bonusTime} />
+    <span>Bonus Time:</span> 
+    <InputField bind:value={bonusTime} suffix="seconds" pattern={"[1-9][0-9]{0,3}" }/>
     <InfoIcon text={`'Bonus Time' is refreshed whenever the player's turn starts.`}/>
-</div>
 
-<div class="hGroup">
-    Clutch Time:
-    <InputField bind:value={clutchTime} />
+    <span>Clutch Time:</span> 
+    <InputField bind:value={clutchTime} suffix="seconds" pattern={"[1-9][0-9]{0,3}"}/>
     <InfoIcon text={`'Clutch Time' is given when any player who has run out of Reserve Time takes 
     priority, so they will have at least clutch + bonus time. The intention is to 
     always allow players to react and take prio regardless how large their time pool is.
     `} />
 </div>
 
+
 <!-- /////////////////////////////////// -->
+
+<h3>3.Invite other players</h3>
+<p>
+    Get other players to join by sending them the code.<br/>
+    Players that have joined will show in the list below. <br/>
+    You can pick a name and join the lobby too now.
+</p>
+
+<div class="hGroup">
+   
+    <InputField bind:value={$roomId} placeholder="Player name..." />
+    <Button on:click={createRoom}>
+        <span>Join Lobby</span>
+    </Button>
+</div>
+
+
+
 <style>
     .divider {
         height: 2px;
@@ -71,5 +85,13 @@
         align-items: center;
         margin: 1rem;
         gap: 1rem;
+    }
+
+
+    .rules {
+        display: inline-grid;
+  grid-template-columns: auto auto auto;
+  align-items: center;
+  gap:0.5rem;
     }
 </style>
