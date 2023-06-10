@@ -6,3 +6,4 @@ export const isHost = writable(false)
 export const testVar = writable(100)
 
 export const playersChanged = writable(false)
+export const gameStarted = writable(false)

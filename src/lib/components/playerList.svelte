@@ -5,7 +5,7 @@
     import { flip } from "svelte/animate";
     import { dndzone } from "svelte-dnd-action";
 
-    export let canArrange = true;
+    export let canArrange = false;
 
     let colors = ["blue", "red", "yellow", "green", "orange", "purple"];
 
@@ -27,7 +27,13 @@
         playerItems = e.detail.items;
     }
     function onFinalize(e) {
+        console.log(e);
         playerItems = e.detail.items;
+        orderedPlayerId.length = 0;
+
+        for (const item of playerItems) {
+            orderedPlayerId.push(item.code);
+        }
     }
 </script>
 
@@ -39,7 +45,7 @@
             items: playerItems,
             flipDurationMs: 300,
             dragDisabled: !canArrange,
-         dropTargetStyle:{}
+            dropTargetStyle: {},
         }}
         on:consider={onConsider}
         on:finalize={onFinalize}
@@ -102,11 +108,4 @@
 
         padding: 1rem;
     }
-
-
-    .playerItem:active > .circle{
-        background-color: var(--fg1)!important;
-    }
-
-
 </style>

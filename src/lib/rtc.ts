@@ -4,7 +4,7 @@ import { roomId, isHost, playerId } from "./stores";
 import deltaStore from "./deltaStore";
 import { get } from "svelte/store";
 import { MessageTypes, type Message } from "./types";
-import { addPlayer } from "./players";
+import { addPlayer, players } from "./players";
 
 class DataChannels {
     channel: RTCDataChannel;
@@ -16,6 +16,10 @@ class DataChannels {
         this.callbacks = {};
         console.log("in data channel constructor");
 
+        if (get(playerId).length > 0){
+            userName  = players[get(playerId)].name
+        }
+
         const msg = JSON.stringify({
             type: MessageTypes.PlayerJoined,
             origin: get(playerId),
@@ -26,23 +30,24 @@ class DataChannels {
         });
         channel.onopen = (e) => {
             console.log("channel opened", channel);
-            if (userName) {
-                channel.send(
-                    msg
-                )
-            }
+            channel.send(
+                msg
+            )
+            // if (userName) {
+
+            // }   
         }
         channel.onclose = (e) => {
             console.log("channel onclose", channel);
         }
-        channel.onmessage = (e)=>{this.onMessage(e)}
-     
+        channel.onmessage = (e) => { this.onMessage(e) }
+
     }
 
 
     subscribe(callback: (msg: Message) => void) {
         this.index += 1;
-     
+
         this.callbacks[this.index] = callback
 
     }
@@ -51,7 +56,7 @@ class DataChannels {
         if (!e.data) return;
         const obj: Message = JSON.parse(e.data);
         console.log(this);
-        
+
         for (const [_, callback] of Object.entries(this.callbacks)) {
             callback(obj);
         }
@@ -101,6 +106,7 @@ async function joinRoom(id: string, userName: string) {
     const currentUser = await addDoc(users, {})
     userId = currentUser.id;
     playerId.set(userId);
+    addPlayer(get(playerId), userName);
     const currentOffers = collection(currentUser, "offers")
     const currentAnwsers = collection(currentUser, "anwsers")
 
@@ -244,7 +250,7 @@ async function joinRoom(id: string, userName: string) {
             )
         )
     })
-    addPlayer(get(playerId), userName);
+
 
 }
 

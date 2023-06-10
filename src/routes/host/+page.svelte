@@ -103,9 +103,17 @@
 </div>
 
 <!-- /////////////////////////////////// -->
-<PlayerList>
+<PlayerList canArrange={true}>
     
 </PlayerList>
+
+<p>
+    If all players has joined, arrange the players into the correct playing order, then click on start.
+</p>
+
+<Button style="margin:2rem; margin-left:0;">
+    <h2>Start game</h2>
+</Button>
 
 <style>
     .divider {
@@ -126,5 +134,10 @@
         grid-template-columns: auto auto auto;
         align-items: center;
         gap: 0.5rem;
+    }
+
+
+    h2{
+        margin: 0.5rem;
     }
 </style>

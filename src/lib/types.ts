@@ -19,6 +19,7 @@ messages types:
 const enum MessageTypes {
     PlayerJoined = "player_joined", // has player info
     PlayerInfoResponse = "player_response",
+    PlayerOrder = "player_order"
 }
 
 interface Message {

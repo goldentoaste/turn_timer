@@ -7,10 +7,11 @@ import { MessageTypes } from "./types";
 
 const players: { [id: string]: PlayerInfo } = {}
 const orderedPlayerId: string[] = []
+
+
+
 onAnyMessage((msg) => {
-
     console.log("Received message");
-
     if (msg.type === MessageTypes.PlayerJoined || msg.type === MessageTypes.PlayerInfoResponse) {
         const content: PlayerInfo = msg.content;
 

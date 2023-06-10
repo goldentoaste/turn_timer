@@ -33,6 +33,8 @@
         user-select: none;
         transition: all 0.4s ease-out;
         cursor: pointer;
+
+        width: fit-content;
     }
 
     .buttonRoot:active{
