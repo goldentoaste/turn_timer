@@ -1,6 +1,6 @@
 import { get } from "svelte/store";
-import { onAnyMessage } from "./messaging";
-import { playersChanged } from "./stores";
+import { onAnyMessage, sendMsg } from "./messaging";
+import { playerId, playersChanged } from "./stores";
 import type { PlayerInfo } from "./types";
 
 import { MessageTypes } from "./types";
@@ -10,7 +10,20 @@ const orderedPlayerId: string[] = []
 onAnyMessage((msg) => {
     if (msg.type === MessageTypes.PlayerJoined) {
         const content: PlayerInfo = msg.content;
-        addPlayer(content.id, content.name)
+        addPlayer(content.id, content.name);
+        const currentPlayerId = get(playerId);
+        // when another player annouce their presence, respond.
+
+        console.log("replying to player's annoucement", content.id);
+        
+        sendMsg({
+            type: MessageTypes.PlayerJoined,
+            origin: currentPlayerId,
+            content: {
+                id: currentPlayerId,
+                name: players[currentPlayerId]
+            }
+        }, content.id)
     }
 })
 

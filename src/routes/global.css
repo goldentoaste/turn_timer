@@ -34,7 +34,8 @@ body {
 
 h1,
 h2,
-h3 {
+h3,
+h4 {
     color: var(--red);
     filter: brightness(1.4);
     font-family: 'FiraMono', monospace;

@@ -21,9 +21,10 @@ messages types:
 
 }
 
-interface Message<T> {
+interface Message {
     type:string,
-    content:T
+    origin:string,
+    content:any
 }
 // the "content" can be then modeled by a typescript interface.
 
