@@ -2,7 +2,7 @@ import { get } from "svelte/store";
 import { onAnyMessage, sendMsg } from "./messaging";
 import { orderedPlayerId, players } from "./players";
 import { gameStarted, playerId } from "./stores";
-import { MessageTypes, type StartGame } from "./types";
+import { MessageTypes, type PlayerInfo, type StartGame } from "./types";
 
 import { bonusTime, bonusTimeStore, reserveTime, reserveTimeStore, clutchTime, clutchTimeStore } from './stores'
 
@@ -17,9 +17,9 @@ onAnyMessage((e) => {
         reserveTimeStore.set(info.reserveTime + "")
         bonusTimeStore.set(info.bonusTime + "")
         clutchTimeStore.set(info.reserveTime + "")
-
-        gameStarted.set(true)
         initGame()
+        gameStarted.set(true)
+
     }
 })
 
@@ -28,7 +28,7 @@ function initGame() {
     for (const player of Object.values(players)) {
         player.reserveTime = reserveTime;
         player.bonusTime = bonusTime;
-        player.clutchTime = clutchTime;
+        player.clutchTime = 0;
         player.hasPrio = false;
         player.hasTurn = player.id === orderedPlayerId[0];
     }
@@ -37,8 +37,6 @@ function initGame() {
 
 function startGame() {
     // give playing order to every player.
-
-
     sendMsg(
         {
             type: MessageTypes.StartGame,
@@ -51,7 +49,15 @@ function startGame() {
             }
         }
     )
-    gameStarted.set(true)
+ 
     initGame()
+    gameStarted.set(true)
 }
 
+interface GameState {
+    players : {[id:string]: PlayerInfo};
+    
+}
+function makeStates(){
+
+}
