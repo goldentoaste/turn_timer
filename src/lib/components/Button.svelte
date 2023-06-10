@@ -1,11 +1,12 @@
 <script>
     export let style = "";
-
+    export let disabled = false;
     let hovering = false;
 </script>
 
 <div
     class="buttonRoot"
+    class:disabled
     on:mouseenter={() => {
         hovering = true;
     }}
@@ -104,5 +105,11 @@
 
     .hExpand {
         width: 100%;
+    }
+
+
+    .disabled {
+        filter: brightness(0.8);
+        pointer-events: none;
     }
 </style>

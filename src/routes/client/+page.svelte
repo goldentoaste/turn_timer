@@ -1,64 +1,34 @@
 <script lang="ts">
+    import Button from "$lib/components/Button.svelte";
+    import InputField from "$lib/components/inputField.svelte";
+    import { players } from "$lib/players";
     import { joinRoom, dataChannels } from "$lib/rtc";
-    import { onMount } from "svelte";
+    import { roomId, playerId } from "$lib/stores";
 
-    let roomId: string;
-    let message;
-    let connected = false;
+    let playerName = "";
 
-    let receivedMessages: string[] = [];
-
-    function sendMsg() {
-        receivedMessages = [...receivedMessages, `you said: ${message}`];
-        for (const [_, channel] of Object.entries($dataChannels)) {
-            console.log(`sending message: ${message}`);
-
-            channel.send(message);
-         
-        }
-    }
-
-    function join() {
-        if (roomId) {
-            joinRoom(roomId).then((e) => (connected = true));
-        }
-    }
-
-    dataChannels.subscribe((event) => {
-        console.log("at client", $dataChannels);
-
-        for (const [key, channel] of Object.entries(dataChannels.getDelta())) {
-            console.log("on data channel at client");
-
-            channel.onopen = (o) => console.log("client channel opened");
-            channel.onclose = (o) => console.log("onclose");
-            channel.onmessage = (msg) => {
-                console.log(`received data from ${key}`, msg.data);
-
-                receivedMessages = [
-                    ...receivedMessages,
-                    `${key} says: ${msg.data}`,
-                ];
-            };
-        }
-    });
 </script>
 
-
+<div class="hGroup">
+    <InputField bind:value={playerName} placeholder="Player name..." />
+    <InputField bind:value={$roomId} placeholder="Room id..." />
+    <Button
+        disabled={($roomId.length == 0 || playerName.length==0) ||
+            ($playerId.length > 0 && players[$playerId] !== undefined)}
+        on:click={() => {
+            joinRoom($roomId, playerName);
+        }}
+    >
+        <span>Join Lobby</span>
+    </Button>
+</div>
 
 <style>
-    .content {
+    .hGroup {
         display: flex;
-        flex-direction: column;
-        max-width: 500px;
-    }
-
-    .received {
-        display: flex;
-        flex-direction: column;
-        border: black 2px solid;
-        padding: 1rem;
-        width: 500px;
-        height: 600px;
+        flex-direction: row;
+        align-items: center;
+        margin: 1rem;
+        gap: 1rem;
     }
 </style>

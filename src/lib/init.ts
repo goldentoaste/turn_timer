@@ -4,8 +4,6 @@ import { initializeFB } from "./firebase";
 
 
 function initAll(){
-
-
     initializeFB()
 }
 

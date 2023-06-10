@@ -20,7 +20,8 @@
 
     let inputField;
     function checkInput(event) {
-        if (inputField.checkValidity()) {
+ 
+        if (!pattern || inputField.checkValidity()) {
             value = inputField.value;
         } else {
             inputField.value = value;

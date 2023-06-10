@@ -9,15 +9,35 @@ class DataChannels {
 
     callbacks: { [key: number]: ((msg: Message<any>) => void) } = {};
     index = 0;
-    constructor(channel: RTCDataChannel) {
+    constructor(channel: RTCDataChannel, userName?: string) {
         this.channel = channel;
+        const msg = JSON.stringify({
+            type: MessageTypes.PlayerJoined,
+            content: {
+                id: get(playerId),
+                name: userName
+            }
+        });
         channel.onopen = (e) => {
             console.log("channel opened", channel);
+
+            if (userName) {
+
+                channel.send(
+                    msg
+                )
+            }
         }
         channel.onclose = (e) => {
             console.log("channel onclose", channel);
         }
         channel.onmessage = this.onMessage
+
+        if (userName) {
+            this.onMessage({
+                data: msg
+            })
+        }
 
     }
 
@@ -27,7 +47,7 @@ class DataChannels {
         this.callbacks[this.index] = callback
     }
 
-    onMessage(e: MessageEvent<any>) {
+    onMessage(e: MessageEvent<any> | any) {
         if (!e.data) return;
         const obj: Message<any> = JSON.parse(e.data);
         for (const [_, callback] of Object.entries(this.callbacks)) {
@@ -71,7 +91,7 @@ async function createRoom() {
 // when anwser is received, set the *existing* peer connection's remote to anwser, and stop here.
 
 // when ever offer and anwser is created, attack the associated ice candidates to the documents
-async function joinRoom(id: string) {
+async function joinRoom(id: string, userName: string) {
 
     const roomDoc = await doc(db, `rooms/${id}`)
     const users = collection(roomDoc, "users")
@@ -99,7 +119,7 @@ async function joinRoom(id: string) {
 
             const targetOffers = collection(target.ref, `/offers`)
             const connection = new RTCPeerConnection(connectionConfig);
-            dataChannels.push(target.id, new DataChannels(connection.createDataChannel("messages")))
+            dataChannels.push(target.id, new DataChannels(connection.createDataChannel("messages"), userName))
 
 
             // update the list of connections
