@@ -42,8 +42,18 @@
         bonusTime: 200,
         clutchTime: 15,
     };
+    let player = gameState.players[gameState.currentPlayerId]
+    let thisPlayerHasTurn = false;
+    let thisPlayerHasPrio = false;
+    gameState.turnPlayer.subscribe((newVal)=>{
+        thisPlayerHasTurn =  player.id === newVal;
+    })
 
-    console.log(Object.keys(gameState.players));
+    gameState.prioPlayer.subscribe((newVal)=>{
+        thisPlayerHasPrio = player.id === newVal;
+    })
+    
+
 </script>
 
 
@@ -59,7 +69,7 @@
     {/each}
 
     <div class="playerList">
-        {#each Object.keys(gameState.players) as playerId, index}
+        {#each Object.keys(gameState.players) as playerId}
             {#if playerId !== get(gameState.prioPlayer)}
                 <PlayerComp {gameState} player={gameState.players[playerId]} />
                 <div class="divider" />
@@ -69,8 +79,8 @@
 </div>
 
 <div class="hGroup">
-    <Button>Take Priority</Button>
-    <Button>Take Turn</Button>
+    <Button disabled={thisPlayerHasPrio}>Take Priority</Button>
+    <Button disabled={!thisPlayerHasTurn}>Pass Turn</Button>
 </div>
 
 <style>

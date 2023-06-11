@@ -64,6 +64,8 @@ interface GameState {
     bonusTime: number,
     clutchTime:number
 
+    // add function to send msgs
+
 }
 function makeStates() : GameState{
     
