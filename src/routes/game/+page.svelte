@@ -2,6 +2,7 @@
     import type { GameState } from "$lib/game";
     import { get, writable } from "svelte/store";
     import PlayerComp from "./playerComp.svelte";
+    import Button from "$lib/components/Button.svelte";
 
     let gameState: GameState = {
         players: {
@@ -43,24 +44,33 @@
     };
 
     console.log(Object.keys(gameState.players));
-    
 </script>
+
 
 <div class="top">
     {#each Object.keys(gameState.players) as playerId}
         {#if playerId === get(gameState.prioPlayer)}
-            <PlayerComp {gameState} isBig player={gameState.players[playerId]}/>
+            <PlayerComp
+                {gameState}
+                isBig
+                player={gameState.players[playerId]}
+            />
         {/if}
     {/each}
 
     <div class="playerList">
-        {#each Object.keys(gameState.players) as playerId}
-        
+        {#each Object.keys(gameState.players) as playerId, index}
             {#if playerId !== get(gameState.prioPlayer)}
-                <PlayerComp {gameState} player={gameState.players[playerId]}/>
+                <PlayerComp {gameState} player={gameState.players[playerId]} />
+                <div class="divider" />
             {/if}
-    {/each}
+        {/each}
     </div>
+</div>
+
+<div class="hGroup">
+    <Button>Take Priority</Button>
+    <Button>Take Turn</Button>
 </div>
 
 <style>
@@ -73,7 +83,36 @@
         display: flex;
         flex-direction: column;
 
+        padding-left: 1rem;
+        margin-left: 1rem;
         border-left: 2px solid var(--fg1);
         gap: 0.5rem;
     }
+
+    .divider {
+        height: 2px;
+        width: auto;
+        background-color: var(--bg1);
+    }
+
+    .divider:last-child {
+        display: none;
+    }
+
+
+   :global(body)  {
+        padding:1rem;
+    }
+
+    .hGroup {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        margin: 1rem;
+        gap: 1rem;
+
+        border-top:2px solid var(--fg1);
+        padding-top: 1rem;
+    }
+
 </style>

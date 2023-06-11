@@ -5,7 +5,7 @@
     import { flip } from "svelte/animate";
     import { dndzone } from "svelte-dnd-action";
 
-    export let canArrange = false;
+    export let canArrange = true;
 
     let colors = ["blue", "red", "yellow", "green", "orange", "purple"];
 
