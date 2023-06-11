@@ -1,7 +1,7 @@
-import { get } from "svelte/store";
+import { get, type Writable } from "svelte/store";
 import { onAnyMessage, sendMsg } from "./messaging";
 import { orderedPlayerId, players } from "./players";
-import { gameStarted, playerId } from "./stores";
+import { gameStarted, playerId, prioPlayer, turnPlayer } from "./stores";
 import { MessageTypes, type PlayerInfo, type StartGame } from "./types";
 
 import { bonusTime, bonusTimeStore, reserveTime, reserveTimeStore, clutchTime, clutchTimeStore } from './stores'
@@ -49,15 +49,36 @@ function startGame() {
             }
         }
     )
- 
+
     initGame()
     gameStarted.set(true)
 }
 
 interface GameState {
     players : {[id:string]: PlayerInfo};
-    
-}
-function makeStates(){
+    orderedPlayerIds : string[],
+    turnPlayer: Writable<string>,
+    prioPlayer: Writable<string>,
+    currentPlayerId: string,
+    reserveTime : number,
+    bonusTime: number,
+    clutchTime:number
 
+}
+function makeStates() : GameState{
+    
+    return {
+        players : players,
+        orderedPlayerIds: orderedPlayerId,
+        turnPlayer: turnPlayer,
+        prioPlayer: prioPlayer,
+        currentPlayerId: get(playerId),
+        reserveTime: reserveTime,
+        bonusTime: bonusTime,
+        clutchTime: clutchTime
+    }
+}
+
+export {
+    type GameState, makeStates, startGame
 }
