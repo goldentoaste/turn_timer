@@ -9,8 +9,7 @@
             "1": {
                 id: "1",
                 name: "player1",
-                hasPrio: false,
-                hasTurn: true,
+
                 reserveTime: 100,
                 bonusTime: 100,
                 clutchTime: 0,
@@ -18,8 +17,7 @@
             "2": {
                 id: "2",
                 name: "player2",
-                hasPrio: true,
-                hasTurn: false,
+            
                 reserveTime: 100,
                 bonusTime: 200,
                 clutchTime: 0,
@@ -27,14 +25,21 @@
             "3": {
                 id: "3",
                 name: "player3",
-                hasPrio: false,
-                hasTurn: false,
+          
+                reserveTime: 100,
+                bonusTime: 200,
+                clutchTime: 0,
+            },
+            "4": {
+                id: "4",
+                name: "player4",
+             
                 reserveTime: 100,
                 bonusTime: 200,
                 clutchTime: 0,
             },
         },
-        orderedPlayerIds: ["1", "2", "3"],
+        orderedPlayerIds: ["1", "2", "3", "4"],
         turnPlayer: writable("1"),
         prioPlayer: writable("2"),
         currentPlayerId: "1",
@@ -42,20 +47,17 @@
         bonusTime: 200,
         clutchTime: 15,
     };
-    let player = gameState.players[gameState.currentPlayerId]
+    let player = gameState.players[gameState.currentPlayerId];
     let thisPlayerHasTurn = false;
     let thisPlayerHasPrio = false;
-    gameState.turnPlayer.subscribe((newVal)=>{
-        thisPlayerHasTurn =  player.id === newVal;
-    })
+    gameState.turnPlayer.subscribe((newVal) => {
+        thisPlayerHasTurn = player.id === newVal;
+    });
 
-    gameState.prioPlayer.subscribe((newVal)=>{
+    gameState.prioPlayer.subscribe((newVal) => {
         thisPlayerHasPrio = player.id === newVal;
-    })
-    
-
+    });
 </script>
-
 
 <div class="top">
     {#each Object.keys(gameState.players) as playerId}
@@ -87,6 +89,7 @@
     .top {
         display: flex;
         flex-direction: row;
+        align-items: center;
     }
 
     .playerList {
@@ -109,9 +112,8 @@
         display: none;
     }
 
-
-   :global(body)  {
-        padding:1rem;
+    :global(body) {
+        padding: 1rem;
     }
 
     .hGroup {
@@ -121,8 +123,7 @@
         margin: 1rem;
         gap: 1rem;
 
-        border-top:2px solid var(--fg1);
+        border-top: 2px solid var(--fg1);
         padding-top: 1rem;
     }
-
 </style>

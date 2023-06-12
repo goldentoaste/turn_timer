@@ -1,4 +1,5 @@
-import { writable } from 'svelte/store';
+import { writable, type Writable } from 'svelte/store';
+import type { GameState } from './game';
 
 export const roomId = writable("");
 export const playerId = writable("")
@@ -28,3 +29,5 @@ clutchTimeStore.subscribe((val) => {
 
 export const turnPlayer = writable("")
 export const prioPlayer = writable("")
+
+export const globalState : Writable<GameState> = writable({})

@@ -10,17 +10,17 @@ content:{
 `
 
 
-/*
-messages types:
 
-
-*/
 
 const enum MessageTypes {
     PlayerJoined = "player_joined", // has player info
     PlayerInfoResponse = "player_response",
-  
-    StartGame = "start_game"
+    StartGame = "start_game",
+    PassTurn = "pass_turn",
+    TakePrio = "take_prio",
+    StartTurn = "start_turn", // when received start turn, send info to all other players to sync up
+    PauseTime = "pause_time",
+
 }
 
 interface Message {
@@ -37,11 +37,10 @@ interface Message {
 interface PlayerInfo {
     name: string,
     id: string,
-    hasPrio?: boolean,
-    hasTurn?: boolean,
-    reserveTime?:number,
-    bonusTime? : number,
-    clutchTime?:number
+
+    reserveTime?: number,
+    bonusTime?: number,
+    clutchTime?: number
 }
 
 // game rules, player order, and to indicate starting game.
@@ -52,8 +51,13 @@ interface StartGame {
     playerOrder: string[],
 }
 
+interface PassInfo {
+    targetId: string
+}
+
+interface PauseTime {
+    pause: boolean
+}
 
 
-
-
-export { MessageTypes, type Message, type PlayerInfo, type StartGame }
+export { MessageTypes, type Message, type PlayerInfo, type StartGame, type PassInfo, type PauseTime }

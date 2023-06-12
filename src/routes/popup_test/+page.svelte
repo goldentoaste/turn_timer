@@ -3,8 +3,19 @@
 
 <script>
     import { testVar } from "$lib/stores";
+    import { get, writable } from "svelte/store";
 
-    
+    const testing = writable({
+        x:1, 
+        y:2
+    })
+
+
+    const tester = get(testing)
+    tester.x = 44;
+
+    console.log("tester", tester)
+    console.log("testing", get(testing))
 
 
     function open(){

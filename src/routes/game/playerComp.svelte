@@ -76,6 +76,8 @@
         background-color: var(--bg1);
         border: 2px solid var(--bg2);
         margin: 0.5rem;
+
+        height: fit-content;
     }
     .turnPlayer {
         border: var(--red) solid 2px;

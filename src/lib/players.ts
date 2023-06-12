@@ -24,8 +24,6 @@ function addPlayer(id: string, name: string) {
     players[id] = {
         id: id,
         name: name,
-        hasPrio: false,
-        hasTurn: false,
         reserveTime:0,
         bonusTime:0,
         clutchTime:0
