@@ -17,7 +17,7 @@
             "2": {
                 id: "2",
                 name: "player2",
-            
+
                 reserveTime: 100,
                 bonusTime: 200,
                 clutchTime: 0,
@@ -25,7 +25,7 @@
             "3": {
                 id: "3",
                 name: "player3",
-          
+
                 reserveTime: 100,
                 bonusTime: 200,
                 clutchTime: 0,
@@ -33,7 +33,7 @@
             "4": {
                 id: "4",
                 name: "player4",
-             
+
                 reserveTime: 100,
                 bonusTime: 200,
                 clutchTime: 0,
@@ -57,6 +57,9 @@
     gameState.prioPlayer.subscribe((newVal) => {
         thisPlayerHasPrio = player.id === newVal;
     });
+
+
+    
 </script>
 
 <div class="top">
@@ -81,8 +84,18 @@
 </div>
 
 <div class="hGroup">
-    <Button disabled={thisPlayerHasPrio}>Take Priority</Button>
-    <Button disabled={!thisPlayerHasTurn}>Pass Turn</Button>
+    <Button
+        disabled={thisPlayerHasPrio}
+        on:click={() => {
+            gameState.takePrio();
+        }}>Take Priority</Button
+    >
+    <Button
+        disabled={!thisPlayerHasTurn}
+        on:click={() => {
+            gameState.passTurn();
+        }}>Pass Turn</Button
+    >
 </div>
 
 <style>

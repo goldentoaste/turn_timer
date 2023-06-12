@@ -149,7 +149,9 @@ interface GameState {
     reserveTime?: number,
     bonusTime?: number,
     clutchTime?: number,
-    pauseTime?: boolean
+    pauseTime?: boolean,
+    takePrio?: ()=>void,
+    passTurn?: ()=>void
 
     // add function to send msgs
 
@@ -166,7 +168,9 @@ function makeStates(): GameState {
         reserveTime: reserveTime,
         bonusTime: bonusTime,
         clutchTime: clutchTime,
-        pauseTime: false
+        pauseTime: false,
+        passTurn,
+        takePrio
     };
     globalState.set(
         res
