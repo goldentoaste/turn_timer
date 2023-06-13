@@ -24,6 +24,7 @@
     class:turnPlayer={player.id === get(gameState.turnPlayer)}
     {style}
     class:isBig
+    class:timeOut={player}
 >
     <div class="stuff">
         <div
@@ -61,6 +62,12 @@
 </div>
 
 <style>
+
+    .timeOut {
+        filter: brightness(0.7);
+        pointer-events: none;
+    }
+
     .centerAlign {
         display: flex;
         flex-direction: column;

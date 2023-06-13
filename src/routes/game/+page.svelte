@@ -3,8 +3,13 @@
     import { get, writable } from "svelte/store";
     import PlayerComp from "./playerComp.svelte";
     import Button from "$lib/components/Button.svelte";
+    import { onMount } from "svelte";
+    import type { PlayerInfo } from "$lib/types";
+    import { fade } from "svelte/transition";
 
-    let gameState: GameState = {
+    let gameState: GameState ;
+
+    let gameState1: GameState = {
         players: {
             "1": {
                 id: "1",
@@ -47,56 +52,96 @@
         bonusTime: 200,
         clutchTime: 15,
     };
-    let player = gameState.players[gameState.currentPlayerId];
+    let player: PlayerInfo;
     let thisPlayerHasTurn = false;
     let thisPlayerHasPrio = false;
-    gameState.turnPlayer.subscribe((newVal) => {
-        thisPlayerHasTurn = player.id === newVal;
+
+    onMount(() => {
+        gameState = window.opener.gameState;
+        console.log(gameState);
+        
+        player = gameState.players[gameState.currentPlayerId];
+        gameState.turnPlayer.subscribe((newVal) => {
+            thisPlayerHasTurn = player.id === newVal && !player.timedOut;
+        });
+
+        gameState.prioPlayer.subscribe((newVal) => {
+            thisPlayerHasPrio = player.id === newVal && !player.timedOut;
+        });
+        setInterval(() => {
+            if (gameState.timePaused || !get(gameState.prioPlayer)) {
+                return;
+            }
+            const prioPlayer = gameState.players[get(gameState.prioPlayer)];
+
+            if (prioPlayer.bonusTime > 0) {
+                prioPlayer.bonusTime -= 1;
+            } else if (prioPlayer.reserveTime > 0) {
+                prioPlayer.reserveTime -= 1;
+            } else if (prioPlayer.clutchTime > 0) {
+                prioPlayer.clutchTime -= 1;
+            } else {
+                if (prioPlayer.id === player.id) {
+                    gameState.timeOut();
+                    gameState.passTurn();
+                }
+            }
+        }, 1000);
     });
-
-    gameState.prioPlayer.subscribe((newVal) => {
-        thisPlayerHasPrio = player.id === newVal;
-    });
-
-
-    
 </script>
 
-<div class="top">
-    {#each Object.keys(gameState.players) as playerId}
-        {#if playerId === get(gameState.prioPlayer)}
-            <PlayerComp
-                {gameState}
-                isBig
-                player={gameState.players[playerId]}
-            />
-        {/if}
-    {/each}
-
-    <div class="playerList">
-        {#each Object.keys(gameState.players) as playerId}
-            {#if playerId !== get(gameState.prioPlayer)}
-                <PlayerComp {gameState} player={gameState.players[playerId]} />
-                <div class="divider" />
-            {/if}
-        {/each}
+{#if !gameState}
+    <h1>Loading...</h1>
+    {:else}
+    <div transition:fade>
+        <div class="top">
+            {#each Object.keys(gameState.players) as playerId}
+                {#if playerId === get(gameState.prioPlayer)}
+                    <PlayerComp
+                        {gameState}
+                        isBig
+                        player={gameState.players[playerId]}
+                    />
+                {/if}
+            {/each}
+        
+            <div class="playerList">
+                {#each Object.keys(gameState.players) as playerId}
+                    {#if playerId !== get(gameState.prioPlayer)}
+                        <PlayerComp {gameState} player={gameState.players[playerId]} />
+                        <div class="divider" />
+                    {/if}
+                {/each}
+            </div>
+        </div>
+        
+        <div class="hGroup">
+            <Button
+                disabled={thisPlayerHasPrio || player.timedOut}
+                on:click={() => {
+                    gameState.takePrio();
+                }}>Take Priority</Button
+            >
+            <Button
+                disabled={!thisPlayerHasTurn || player.timedOut}
+                on:click={() => {
+                    gameState.passTurn();
+                }}>Pass Turn</Button
+            >
+            <Button
+                on:click={() => {
+                    gameState.toggleTime(!gameState.timePaused);
+                }}
+            >
+                {#if gameState.timePaused}
+                    Unpause Time
+                {:else}
+                    Pause Time
+                {/if}
+            </Button>
+        </div>
     </div>
-</div>
-
-<div class="hGroup">
-    <Button
-        disabled={thisPlayerHasPrio}
-        on:click={() => {
-            gameState.takePrio();
-        }}>Take Priority</Button
-    >
-    <Button
-        disabled={!thisPlayerHasTurn}
-        on:click={() => {
-            gameState.passTurn();
-        }}>Pass Turn</Button
-    >
-</div>
+{/if}
 
 <style>
     .top {
@@ -126,7 +171,7 @@
     }
 
     :global(body) {
-        padding: 1rem;
+        padding: 1rem !important;
     }
 
     .hGroup {
