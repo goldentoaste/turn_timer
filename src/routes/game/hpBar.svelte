@@ -4,6 +4,7 @@
     export let player: PlayerInfo;
     export let reserve: number;
     export let bonus: number;
+    export let clutch : number;
     export let isBig = false;
 
     let normalTotal = reserve + bonus;
@@ -28,7 +29,7 @@
     <div
         class="clutch bar"
         style="background-color: var(--green); width: {Math.round(
-            (player.clutchTime / normalTotal) * 100
+            (player.clutchTime / (bonus)) * 100
         )}%;"
     />
 {/if}

@@ -58,7 +58,7 @@ onAnyMessage((e) => {
         if (e.type === MessageTypes.PauseTime) {
             const content: PauseTime = e.content;
             console.log("received pause request", content.paused);
-            
+
             state.timePaused.set(content.paused);
         }
 
@@ -137,9 +137,9 @@ function startTurn() {
     const players = get(state.players);
     const player = players[playerId];
     player.bonusTime = bonusTime;
-    if (player.reserveTime <= 0) {
-        player.clutchTime = clutchTime;
-    }
+
+    player.clutchTime = 0;
+
 
     state.players.set(players)
     state.prioPlayer.set(playerId)
@@ -160,7 +160,7 @@ function takePrio() {
 
     const players = get(state.players);
     const player = players[playerId];
-    if (player.reserveTime <= 0) {
+    if (player.bonusTime <= 0) {
         player.clutchTime = clutchTime;
     }
     state.players.set(players)

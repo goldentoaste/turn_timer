@@ -61,6 +61,7 @@
         {isBig}
         reserve={gameState.reserveTime}
         bonus={gameState.bonusTime}
+    clutch={gameState.clutchTime}
     />
 </div>
 
@@ -105,8 +106,8 @@
 
     .isBig {
         justify-content: center;
-        padding: 2rem;
-        padding-left: 1rem;
+        padding: 2rem 1rem;
+       
     }
 
     h2 {
@@ -136,5 +137,6 @@
     }
     .isBig > .stuff {
         align-items: flex-start;
+        margin-right: 1rem;
     }
 </style>

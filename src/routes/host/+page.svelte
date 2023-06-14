@@ -129,15 +129,18 @@ width=520,height=350,left=500,top=500`
     order, then click on start.
 </p>
 
-<Button
-    style="margin:2rem; margin-left:0;"
-    on:click={() => {
-        startGame();
-        open();
-    }}
->
-    <h2>Start game</h2>
-</Button>
+<div class="hGroup">
+    <Button
+        style="margin:2rem 1rem; margin-left:0;"
+        on:click={() => {
+            startGame();
+            open();
+        }}
+    >
+        <h2>Start game</h2>
+    </Button>
+    <Button on:click={open}>Open game window</Button>
+</div>
 
 <style>
     .divider {

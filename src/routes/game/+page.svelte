@@ -110,9 +110,9 @@
             if (prioPlayer.bonusTime > 0) {
                 prioPlayer.bonusTime -= 1;
             } else if (prioPlayer.clutchTime > 0) {
-                prioPlayer.reserveTime -= 1;
-            } else if (prioPlayer.reserveTime > 0) {
                 prioPlayer.clutchTime -= 1;
+            } else if (prioPlayer.reserveTime > 0) {
+                prioPlayer.reserveTime -= 1;
             } else {
                 if (prioPlayer.id === player.id) {
                     gameState.timeOut();
