@@ -1,10 +1,7 @@
 <script>
 
     import { testVar } from "$lib/stores";
-
-
-let show = false;
-    
+    let show = false;
 </script>
 
 
