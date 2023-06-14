@@ -58,7 +58,7 @@ interface PassInfo {
 }
 
 interface PauseTime {
-    pause: boolean
+    paused: boolean
 }
 
 

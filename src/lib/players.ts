@@ -11,13 +11,12 @@ const orderedPlayerId: string[] = []
 
 
 onAnyMessage((msg) => {
-    console.log("Received message");
     if (msg.type === MessageTypes.PlayerJoined || msg.type === MessageTypes.PlayerInfoResponse) {
         const content: PlayerInfo = msg.content;
 
         addPlayer(content.id, content.name);
     }
-})
+}, "player")
 
 
 function addPlayer(id: string, name: string) {

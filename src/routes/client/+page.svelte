@@ -5,7 +5,7 @@
     import { players } from "$lib/players";
     import { joinRoom, dataChannels } from "$lib/rtc";
     import { roomId, playerId, gameStarted, globalState } from "$lib/stores";
-
+    import {startGame} from "$lib/game"
     let playerName = "";
 
 
@@ -49,7 +49,7 @@
     Rules, player order, decided when the host starts the game, and will not be displayed here for now. :^(
 </p>
 
-<PlayerList />
+<PlayerList canArrange={false}/>
 
 <style>
     .hGroup {
