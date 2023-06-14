@@ -4,14 +4,20 @@ import { get } from "svelte/store";
 import type { Message } from "./types";
 
 
-export function onAnyMessage(callback: (msg: Message) => void) {
+let callbacks :  ((msg: Message) => void)[] = []
 
+export function onAnyMessage(callback: (msg: Message) => void, source="none") {
+    console.log("in on any message", source);
+    callbacks.push(callback)
     dataChannels.subscribe((event) => {
-        console.log('subscribing to dataChannel');
-        for (const [key, channel] of Object.entries(dataChannels.getDelta())) {
-            channel.subscribe((msg) => {
-                callback(msg)
-            })
+        for (const [_, channel] of Object.entries(dataChannels.getDelta())) {
+
+            for(const call of callbacks){
+                channel.subscribe((msg) => {
+                    call(msg)
+                })
+            }
+          
         }
     });
 }

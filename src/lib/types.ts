@@ -20,6 +20,7 @@ const enum MessageTypes {
     TakePrio = "take_prio",
     StartTurn = "start_turn", // when received start turn, send info to all other players to sync up
     PauseTime = "pause_time",
+    TimedOut = "time_out"
 
 }
 
@@ -40,7 +41,8 @@ interface PlayerInfo {
 
     reserveTime?: number,
     bonusTime?: number,
-    clutchTime?: number
+    clutchTime?: number,
+    timedOut?: boolean 
 }
 
 // game rules, player order, and to indicate starting game.
@@ -56,7 +58,7 @@ interface PassInfo {
 }
 
 interface PauseTime {
-    pause: boolean
+    paused: boolean
 }
 
 

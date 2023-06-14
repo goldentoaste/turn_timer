@@ -24,6 +24,7 @@
     class:turnPlayer={player.id === get(gameState.turnPlayer)}
     {style}
     class:isBig
+    class:timeOut={player.timedOut}
 >
     <div class="stuff">
         <div
@@ -42,32 +43,41 @@
             {/if}
 
             <div class="centerAlign">
-                <p class:largeFont={isBig}>
-                    {getTimeStr(
-                        player.bonusTime +
-                            player.reserveTime +
-                            player.clutchTime
-                    )}
-                </p>
-                <HpBar
-                    {player}
-                    {isBig}
-                    reserve={gameState.reserveTime}
-                    bonus={gameState.bonusTime}
-                />
+                {#key [player.bonusTime, player.reserveTime, player.clutchTime]}
+                    <p class:largeFont={isBig}>
+                        {getTimeStr(
+                            player.bonusTime +
+                                player.reserveTime +
+                                player.clutchTime
+                        )}
+                    </p>
+                {/key}
             </div>
         </div>
     </div>
+    <HpBar
+        bind:player
+        {isBig}
+        reserve={gameState.reserveTime}
+        bonus={gameState.bonusTime}
+        clutch={gameState.clutchTime}
+    />
 </div>
 
 <style>
+    .timeOut {
+        filter: brightness(0.7);
+        pointer-events: none;
+    }
+
     .centerAlign {
         display: flex;
         flex-direction: column;
         justify-content: center;
     }
     .playerParent {
-        padding: 0.5rem;
+        min-width: 110px;
+        padding: 0.75rem;
         display: flex;
         flex-direction: column;
 
@@ -95,8 +105,7 @@
 
     .isBig {
         justify-content: center;
-        padding: 2rem;
-        padding-left: 1rem;
+        padding: 2rem 1rem;
     }
 
     h2 {
@@ -114,21 +123,18 @@
         margin-right: 0.5rem;
     }
 
-
     .stuff {
         display: flex;
         flex-direction: row;
         align-items: center;
     }
 
-    .isBig>.stuff>.circle{
+    .isBig > .stuff > .circle {
         margin: 0.25rem;
         margin-right: 0.5rem;
-            }
-    .isBig>.stuff{
-        align-items: flex-start;
     }
-
-
-    
+    .isBig > .stuff {
+        align-items: flex-start;
+        margin-right: 1rem;
+    }
 </style>

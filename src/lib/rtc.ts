@@ -1,7 +1,7 @@
 import { app, db } from "$lib/firebase"
 import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, query, setDoc, updateDoc } from "firebase/firestore";
 import { roomId, isHost, playerId } from "./stores";
-import {deltaStore} from "./customStores";
+import { deltaStore } from "./customStores";
 import { get } from "svelte/store";
 import { MessageTypes, type Message } from "./types";
 import { addPlayer, players } from "./players";
@@ -16,8 +16,8 @@ class DataChannels {
         this.callbacks = {};
         console.log("in data channel constructor");
 
-        if (get(playerId).length > 0){
-            userName  = players[get(playerId)].name
+        if (get(playerId).length > 0) {
+            userName = players[get(playerId)].name
         }
 
         const msg = JSON.stringify({
@@ -46,18 +46,23 @@ class DataChannels {
 
 
     subscribe(callback: (msg: Message) => void) {
+
         this.index += 1;
 
-        this.callbacks[this.index] = callback
+        this.callbacks[this.index] = callback;
+        console.log("subbed", Object.keys(this.callbacks).length);
+
 
     }
 
     onMessage(e: MessageEvent<any> | any) {
         if (!e.data) return;
         const obj: Message = JSON.parse(e.data);
-        console.log(this);
+
 
         for (const [_, callback] of Object.entries(this.callbacks)) {
+            console.log("callin");
+
             callback(obj);
         }
     }

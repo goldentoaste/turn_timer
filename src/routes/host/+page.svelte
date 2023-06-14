@@ -4,6 +4,7 @@
     import InfoIcon from "$lib/components/infoIcon.svelte";
     import InputField from "$lib/components/inputField.svelte";
     import PlayerList from "$lib/components/playerList.svelte";
+    import { startGame } from "$lib/game";
     import { orderedPlayerId, players } from "$lib/players";
     import { createRoom, joinRoom, dataChannels, cleanup } from "$lib/rtc";
     import {
@@ -13,6 +14,8 @@
         bonusTimeStore,
         clutchTimeStore,
         reserveTimeStore,
+        gameStarted,
+        globalState,
     } from "$lib/stores";
     import { onDestroy, onMount } from "svelte";
 
@@ -27,6 +30,16 @@
 
     $: if ($playersChanged || !$playersChanged) {
         console.log(orderedPlayerId);
+    }
+
+    function open() {
+        window.gameState = $globalState;
+        window.open(
+            "/game",
+            "Game Window",
+            `scrollbars=no,resizable=yes,status=no,location=no,toolbar=no,menubar=no,
+width=520,height=350,left=500,top=500`
+        );
     }
 </script>
 
@@ -116,9 +129,18 @@
     order, then click on start.
 </p>
 
-<Button style="margin:2rem; margin-left:0;">
-    <h2>Start game</h2>
-</Button>
+<div class="hGroup">
+    <Button
+        style="margin:2rem 1rem; margin-left:0;"
+        on:click={() => {
+            startGame();
+            open();
+        }}
+    >
+        <h2>Start game</h2>
+    </Button>
+    <Button on:click={open}>Open game window</Button>
+</div>
 
 <style>
     .divider {

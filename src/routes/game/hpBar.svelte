@@ -4,12 +4,14 @@
     export let player: PlayerInfo;
     export let reserve: number;
     export let bonus: number;
-    export let isBig  = false;
+    export let clutch : number;
+    export let isBig = false;
 
     let normalTotal = reserve + bonus;
 </script>
 
 <div class="hpParent" class:isBig>
+
     <div
         class="reserve bar"
         style="background-color: var(--blue); width: {Math.round(
@@ -23,14 +25,14 @@
         )}%;"
     />
 
-    {#if player.reserveTime <= 0}
-        <div
-            class="clutch bar"
-            style="background-color: var(--green); width: {Math.round(
-                (player.clutchTime / normalTotal) * 100
-            )}%;"
-        />
-    {/if}
+    {#if player.bonusTime <= 0}
+    <div
+        class="clutch bar"
+        style="background-color: var(--green); width: {Math.round(
+            (player.clutchTime / (bonus)) * 100
+        )}%;"
+    />
+{/if}
 </div>
 
 <style>

@@ -4,9 +4,16 @@
     import PlayerList from "$lib/components/playerList.svelte";
     import { players } from "$lib/players";
     import { joinRoom, dataChannels } from "$lib/rtc";
-    import { roomId, playerId } from "$lib/stores";
-
+    import { roomId, playerId, gameStarted, globalState } from "$lib/stores";
+    import {startGame} from "$lib/game"
     let playerName = "";
+
+
+    function open(){
+        window.gameState = $globalState;
+        window.open("/game","Game Window", `scrollbars=no,resizable=yes,status=no,location=no,toolbar=no,menubar=no,
+        width=520,height=350,left=500,top=500`)
+    }
 </script>
 
 <h1>
@@ -30,6 +37,9 @@
     </Button>
 </div>
 
+<Button disabled={!$gameStarted} on:click={open}>
+    Start Game
+</Button>
 
 <h3>
     Player List
@@ -39,7 +49,7 @@
     Rules, player order, decided when the host starts the game, and will not be displayed here for now. :^(
 </p>
 
-<PlayerList />
+<PlayerList canArrange={false}/>
 
 <style>
     .hGroup {
