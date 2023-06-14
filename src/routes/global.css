@@ -46,9 +46,9 @@ pre {
 }
 d
 a {
-    color: var(--blue);
+    color: var(--blue)!important;
 }
 
 a:visited {
-    color: var(--blue-alt)
+    color: var(--blue-alt)!important;
 }
