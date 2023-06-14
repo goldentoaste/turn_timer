@@ -7,7 +7,8 @@
     import type { PlayerInfo } from "$lib/types";
     import { fade } from "svelte/transition";
 
-    let gameState: GameState ;
+
+    let gameState: GameState;
 
     let gameState1 = {
         players: {
@@ -56,54 +57,52 @@
     let thisPlayerHasTurn = false;
     let thisPlayerHasPrio = false;
     let paused = true;
-    let players : {[id:string]:PlayerInfo}= {}
+    let players: { [id: string]: PlayerInfo } = {};
 
-    $:if(paused || !paused){
+    $: if (paused || !paused) {
         console.log("pause change", paused);
-        
     }
 
+    function rotatedArr(arr:Array<any>, index){
+        return arr.slice(index).concat(arr.slice(0, index))
+    }
 
     onMount(() => {
         gameState = window.opener.gameState;
-        
+
         player = get(gameState.players)[gameState.currentPlayerId];
 
-
-        thisPlayerHasTurn = player.id === get(gameState.turnPlayer) && !player.timedOut;
+        thisPlayerHasTurn =
+            player.id === get(gameState.turnPlayer) && !player.timedOut;
         gameState.turnPlayer.subscribe((newVal) => {
             thisPlayerHasTurn = player.id === newVal && !player.timedOut;
         });
 
-
-        thisPlayerHasPrio = player.id === get(gameState.prioPlayer) && !player.timedOut;
+        thisPlayerHasPrio =
+            player.id === get(gameState.prioPlayer) && !player.timedOut;
         gameState.prioPlayer.subscribe((newVal) => {
             thisPlayerHasPrio = player.id === newVal && !player.timedOut;
         });
 
-        
-        paused = get(gameState.timePaused)
-        gameState.timePaused.subscribe((newVal)=>{
+        paused = get(gameState.timePaused);
+        gameState.timePaused.subscribe((newVal) => {
             paused = newVal;
-        })
+        });
 
-        players = get(gameState.players)
-        gameState.players.subscribe((newVal)=>{
+        players = get(gameState.players);
+        gameState.players.subscribe((newVal) => {
             players = newVal;
             player = players[gameState.currentPlayerId];
-
-
-        })
-        
+        });
 
         setInterval(() => {
             console.log("SETTING INTERVAL");
-            
+
             if (paused || !get(gameState.prioPlayer)) {
                 return;
             }
 
-            const tempPlayers = get(gameState.players)
+            const tempPlayers = get(gameState.players);
 
             const prioPlayer = tempPlayers[get(gameState.prioPlayer)];
 
@@ -120,32 +119,26 @@
                 }
             }
 
-            gameState.players.set(tempPlayers)
-
+            gameState.players.set(tempPlayers);
         }, 1000);
     });
 </script>
 
 {#if !gameState}
     <h1>Loading...</h1>
-    {:else}
+{:else}
     <div transition:fade>
         <div class="top">
             <div class="prioWrapper">
-
-                {#each Object.keys(players) as playerId}
-                    {#if playerId === get(gameState.prioPlayer)}
-                        <PlayerComp
-                            {gameState}
-                            isBig
-                            player={players[playerId]}
-                        />
-                    {/if}
-                {/each}
+                <PlayerComp
+                    {gameState}
+                    isBig
+                    player={players[get(gameState.prioPlayer)]}
+                />
             </div>
-        
+
             <div class="playerList">
-                {#each Object.keys(players) as playerId}
+                {#each rotatedArr(Object.keys(players), gameState.orderedPlayerIds.indexOf(get(gameState.prioPlayer))) as playerId}
                     {#if playerId !== get(gameState.prioPlayer)}
                         <PlayerComp {gameState} player={players[playerId]} />
                         <div class="divider" />
@@ -153,7 +146,7 @@
                 {/each}
             </div>
         </div>
-        
+
         <div class="hGroup">
             <Button
                 disabled={thisPlayerHasPrio || player.timedOut}
@@ -183,12 +176,10 @@
 {/if}
 
 <style>
-
     .prioWrapper {
-    display: flex;
-    justify-content: center;
-    align-items: center;        
-
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
     .top {
         display: flex;

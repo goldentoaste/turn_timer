@@ -26,7 +26,6 @@
     class:isBig
     class:timeOut={player.timedOut}
 >
-
     <div class="stuff">
         <div
             class="circle"
@@ -61,7 +60,7 @@
         {isBig}
         reserve={gameState.reserveTime}
         bonus={gameState.bonusTime}
-    clutch={gameState.clutchTime}
+        clutch={gameState.clutchTime}
     />
 </div>
 
@@ -107,7 +106,6 @@
     .isBig {
         justify-content: center;
         padding: 2rem 1rem;
-       
     }
 
     h2 {
