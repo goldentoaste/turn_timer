@@ -146,9 +146,9 @@
                 }}
             >
                 {#if paused}
-                    Stop Time
-                {:else}
                     Resume Time
+                {:else}
+                    Stop Time
                 {/if}
             </Button>
         </div>

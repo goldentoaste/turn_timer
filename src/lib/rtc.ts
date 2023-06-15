@@ -106,7 +106,15 @@ async function createRoom() {
 async function joinRoom(id: string, userName: string) {
 
     const roomDoc = await doc(db, `rooms/${id}`)
+
+    if(!((await getDoc(roomDoc)).exists())){
+        return "Room does not exist, check if the id is correct."
+    }
+
     const users = collection(roomDoc, "users")
+
+    // check if user id exist in local storage.
+
 
     const currentUser = await addDoc(users, {})
     userId = currentUser.id;
@@ -207,7 +215,6 @@ async function joinRoom(id: string, userName: string) {
                                 await addDoc(anwserCandiatesCollection, event.candidate.toJSON())
                             }
                         }
-
                         connection.setLocalDescription(anwser)
                     }
                 }
@@ -256,6 +263,7 @@ async function joinRoom(id: string, userName: string) {
         )
     })
 
+    return "nice"
 
 }
 
