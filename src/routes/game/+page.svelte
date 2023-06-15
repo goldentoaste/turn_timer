@@ -22,7 +22,7 @@
     }
 
     function rotatedArr(arr: Array<any>, index) {
-        return arr.slice(index).concat(arr.slice(0, index));
+        return arr.slice(index+1).concat(arr.slice(0, index));
     }
 
     onMount(() => {
@@ -77,6 +77,8 @@
                 }
             }
 
+            console.log(gameState.orderedPlayerIds, turnPlayerId, rotatedArr(Object.keys(players), gameState.orderedPlayerIds.indexOf(turnPlayerId)) );
+            
             gameState.players.set(tempPlayers);
         }, 1000);
     });
@@ -101,10 +103,8 @@
                     {prioPlayerId}
                 />
             </div>
-
             <div class="playerList">
-                {#each rotatedArr(Object.keys(players), gameState.orderedPlayerIds.indexOf(turnPlayerId)) as playerId}
-                    {#if playerId !== turnPlayerId}
+                {#each rotatedArr(gameState.orderedPlayerIds, gameState.orderedPlayerIds.indexOf(turnPlayerId)) as playerId}
                         <PlayerComp
                             {gameState}
                             player={players[playerId]}
@@ -112,7 +112,7 @@
                             {prioPlayerId}
                         />
                         <div class="divider" />
-                    {/if}
+                   
                 {/each}
             </div>
         </div>
@@ -190,7 +190,7 @@
     }
 
     :global(body) {
-        padding: 1rem !important;
+        padding: 0.25rem !important;
     }
 
     .hGroup {

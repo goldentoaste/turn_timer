@@ -10,8 +10,9 @@ body {
     --orange: #fe8019;
     --orange-alt: #d67d0e;
 
-    --red: #fb4934;
-    --red-alt: #cc241d;
+
+    --red: #fb5b48;
+    --red-alt: #fb4934;
 
     --green: #8ec07c;
     --green-alt: #689d6a;
@@ -37,7 +38,7 @@ h2,
 h3,
 h4 {
     color: var(--red);
-    filter: brightness(1.4);
+    /* filter: brightness(1.4); */
     font-family: 'FiraMono', monospace;
 }
 
@@ -46,9 +47,9 @@ pre {
 }
 
 a {
-    color: var(--blue)!important;
+    color: var(--blue) !important;
 }
 
 a:visited {
-    color: var(--blue-alt)!important;
+    color: var(--blue-alt) !important;
 }

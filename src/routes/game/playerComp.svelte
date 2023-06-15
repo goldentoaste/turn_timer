@@ -23,7 +23,7 @@
         return `${~~(time / 60)}:${time % 60 < 10 ? 0 : ""}${time % 60}`;
     }
 
-    let colors = ["blue", "red", "yellow", "green", "orange", "purple"];
+    let colors = ["blue-alt", "red", "purple", "green-alt", "orange", "yellow"];
 </script>
 
 <div
@@ -35,6 +35,8 @@
     class:challenge={!playerHasTurn && playerHasPrio}
     class:timeOut={player.timedOut}
 >
+<div>
+
     <div class="stuff">
         <div
             class="circle"
@@ -72,10 +74,14 @@
         hide={!playerHasPrio && prioPlayerId != turnPlayerId && !isBig}
     />
 </div>
+</div>
 
 <style>
+    p{
+        transition: color 0.4s ease-out;
+    }
     .timeOut {
-        filter: brightness(0.5) !important;
+        filter: brightness(0.2) !important;
         pointer-events: none;
     }
 
@@ -91,7 +97,8 @@
         display: flex;
         flex-direction: column;
 
-        justify-content: left;
+        justify-content: center;
+        
 
         background-color: var(--bg1);
         border: 2px solid var(--bg2);
@@ -100,21 +107,23 @@
         height: fit-content;
 
         transition-property: padding, margin, filter, border;
-        transition-duration: 0.5s;
+        transition-duration: 0.3s;
         transition-timing-function: ease-out;
     }
 
     .notPrio {
         padding: 0.25rem 0.75rem;
         margin: 0.25rem 0.5rem;
-        filter: opacity(0.8);
+        filter: opacity(0.5);
     }
     .prioPlayer {
         border: var(--red) solid 2px;
     }
     .challenge {
-        padding-top: 1rem;
-        padding-bottom: 1rem;
+       flex:1;
+
+            /* padding-top: 1.5rem;
+            padding-bottom: 1.5rem; */
     }
 
     .largeFont {
