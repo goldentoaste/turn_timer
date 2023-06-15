@@ -61,7 +61,7 @@
 
     .decor {
         position: absolute;
-        transition-property: width height;
+        transition-property: width, height;
         transition-duration: 0.3s;
         transition-timing-function: ease-out;
 

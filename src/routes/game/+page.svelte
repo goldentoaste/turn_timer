@@ -7,64 +7,22 @@
     import type { PlayerInfo } from "$lib/types";
     import { fade } from "svelte/transition";
 
-
     let gameState: GameState;
-
-    let gameState1 = {
-        players: {
-            "1": {
-                id: "1",
-                name: "player1",
-
-                reserveTime: 100,
-                bonusTime: 100,
-                clutchTime: 0,
-            },
-            "2": {
-                id: "2",
-                name: "player2",
-
-                reserveTime: 100,
-                bonusTime: 200,
-                clutchTime: 0,
-            },
-            "3": {
-                id: "3",
-                name: "player3",
-
-                reserveTime: 100,
-                bonusTime: 200,
-                clutchTime: 0,
-            },
-            "4": {
-                id: "4",
-                name: "player4",
-
-                reserveTime: 100,
-                bonusTime: 200,
-                clutchTime: 0,
-            },
-        },
-        orderedPlayerIds: ["1", "2", "3", "4"],
-        turnPlayer: writable("1"),
-        prioPlayer: writable("2"),
-        currentPlayerId: "1",
-        reserveTime: 100,
-        bonusTime: 200,
-        clutchTime: 15,
-    };
     let player: PlayerInfo;
     let thisPlayerHasTurn = false;
     let thisPlayerHasPrio = false;
     let paused = true;
     let players: { [id: string]: PlayerInfo } = {};
 
+    let prioPlayerId = "";
+    let turnPlayerId = "";
+
     $: if (paused || !paused) {
         console.log("pause change", paused);
     }
 
-    function rotatedArr(arr:Array<any>, index){
-        return arr.slice(index).concat(arr.slice(0, index))
+    function rotatedArr(arr: Array<any>, index) {
+        return arr.slice(index).concat(arr.slice(0, index));
     }
 
     onMount(() => {
@@ -76,12 +34,14 @@
             player.id === get(gameState.turnPlayer) && !player.timedOut;
         gameState.turnPlayer.subscribe((newVal) => {
             thisPlayerHasTurn = player.id === newVal && !player.timedOut;
+            turnPlayerId = newVal;
         });
 
         thisPlayerHasPrio =
             player.id === get(gameState.prioPlayer) && !player.timedOut;
         gameState.prioPlayer.subscribe((newVal) => {
             thisPlayerHasPrio = player.id === newVal && !player.timedOut;
+            prioPlayerId = newVal;
         });
 
         paused = get(gameState.timePaused);
@@ -96,8 +56,6 @@
         });
 
         setInterval(() => {
-            console.log("SETTING INTERVAL");
-
             if (paused || !get(gameState.prioPlayer)) {
                 return;
             }
@@ -124,6 +82,11 @@
     });
 </script>
 
+
+<svelte:head >
+    <title>{player?player.name:"Loading"}</title>
+</svelte:head>
+
 {#if !gameState}
     <h1>Loading...</h1>
 {:else}
@@ -133,14 +96,21 @@
                 <PlayerComp
                     {gameState}
                     isBig
-                    player={players[get(gameState.prioPlayer)]}
+                    player={players[turnPlayerId]}
+                    {turnPlayerId}
+                    {prioPlayerId}
                 />
             </div>
 
             <div class="playerList">
-                {#each rotatedArr(Object.keys(players), gameState.orderedPlayerIds.indexOf(get(gameState.prioPlayer))) as playerId}
-                    {#if playerId !== get(gameState.prioPlayer)}
-                        <PlayerComp {gameState} player={players[playerId]} />
+                {#each rotatedArr(Object.keys(players), gameState.orderedPlayerIds.indexOf(turnPlayerId)) as playerId}
+                    {#if playerId !== turnPlayerId}
+                        <PlayerComp
+                            {gameState}
+                            player={players[playerId]}
+                            {turnPlayerId}
+                            {prioPlayerId}
+                        />
                         <div class="divider" />
                     {/if}
                 {/each}
@@ -149,11 +119,21 @@
 
         <div class="hGroup">
             <Button
-                disabled={thisPlayerHasPrio || player.timedOut}
+                disabled={player.timedOut || (thisPlayerHasTurn && thisPlayerHasPrio)}
                 on:click={() => {
-                    gameState.takePrio();
-                }}>Take Priority</Button
+                    if (thisPlayerHasPrio) {
+                        gameState.returnPrio();
+                    } else {
+                        gameState.takePrio();
+                    }
+                }}
             >
+                {#if thisPlayerHasPrio}
+                    Return Prio
+                {:else}
+                    Take Prio
+                {/if}
+            </Button>
             <Button
                 disabled={!thisPlayerHasTurn || player.timedOut}
                 on:click={() => {
@@ -166,9 +146,9 @@
                 }}
             >
                 {#if paused}
-                    ⏵︎ Unpause Time
+                    Stop Time
                 {:else}
-                    ⏸︎ Pause Time
+                    Resume Time
                 {/if}
             </Button>
         </div>
