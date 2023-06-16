@@ -8,8 +8,10 @@
     import {startGame} from "$lib/game"
     let playerName = "";
 
+    
 
     function open(){
+        // @ts-ignore
         window.gameState = $globalState;
         window.open("/game","Game Window", `scrollbars=no,resizable=yes,status=no,location=no,toolbar=no,menubar=no,
         width=520,height=350,left=500,top=500`)

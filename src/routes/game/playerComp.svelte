@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { bonusTime, clutchTime, turnPlayer } from "$lib/stores";
     import type { PlayerInfo } from "$lib/types";
     import { get, type Writable } from "svelte/store";
     import HpBar from "./hpBar.svelte";
@@ -9,23 +8,35 @@
     export let style = "";
     export let isBig = false;
 
+    export let turnPlayerId; // bind this
+    export let prioPlayerId; // bind this
+
     export let player: PlayerInfo;
-    console.log(player);
+
+    let playerHasTurn = false;
+    let playerHasPrio = false;
+
+    $: playerHasTurn = turnPlayerId === player.id;
+    $: playerHasPrio = prioPlayerId === player.id;
 
     function getTimeStr(time: number): string {
         return `${~~(time / 60)}:${time % 60 < 10 ? 0 : ""}${time % 60}`;
     }
 
-    let colors = ["blue", "red", "yellow", "green", "orange", "purple"];
+    let colors = ["blue-alt", "red", "purple", "green-alt", "orange", "yellow"];
 </script>
 
 <div
     class="playerParent"
-    class:turnPlayer={player.id === get(gameState.turnPlayer)}
+    class:prioPlayer={player.id === prioPlayerId}
     {style}
     class:isBig
+    class:notPrio={!playerHasPrio && prioPlayerId != turnPlayerId && !isBig}
+    class:challenge={!playerHasTurn && playerHasPrio}
     class:timeOut={player.timedOut}
 >
+<div>
+
     <div class="stuff">
         <div
             class="circle"
@@ -39,7 +50,7 @@
                     {player.name}
                 </h2>
             {:else}
-                <p>{player.name}</p>
+                <p style={playerHasPrio?"color:var(--red);":""}>{player.name}</p>
             {/if}
 
             <div class="centerAlign">
@@ -60,13 +71,17 @@
         {isBig}
         reserve={gameState.reserveTime}
         bonus={gameState.bonusTime}
-        clutch={gameState.clutchTime}
+        hide={!playerHasPrio && prioPlayerId != turnPlayerId && !isBig}
     />
+</div>
 </div>
 
 <style>
+    p{
+        transition: color 0.4s ease-out;
+    }
     .timeOut {
-        filter: brightness(0.7);
+        filter: brightness(0.2) !important;
         pointer-events: none;
     }
 
@@ -75,22 +90,40 @@
         flex-direction: column;
         justify-content: center;
     }
+
     .playerParent {
         min-width: 110px;
         padding: 0.75rem;
         display: flex;
         flex-direction: column;
 
-        justify-content: left;
+        justify-content: center;
+        
 
         background-color: var(--bg1);
         border: 2px solid var(--bg2);
         margin: 0.5rem;
 
         height: fit-content;
+
+        transition-property: padding, margin, filter, border;
+        transition-duration: 0.3s;
+        transition-timing-function: ease-out;
     }
-    .turnPlayer {
+
+    .notPrio {
+        padding: 0.25rem 0.75rem;
+        margin: 0.25rem 0.5rem;
+        filter: opacity(0.5);
+    }
+    .prioPlayer {
         border: var(--red) solid 2px;
+    }
+    .challenge {
+       flex:1;
+
+            /* padding-top: 1.5rem;
+            padding-bottom: 1.5rem; */
     }
 
     .largeFont {

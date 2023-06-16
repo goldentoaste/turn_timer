@@ -7,7 +7,8 @@ import { MessageTypes, type PassInfo, type PauseTime, type PlayerInfo, type Star
 import { bonusTime, bonusTimeStore, reserveTime, reserveTimeStore, clutchTime, clutchTimeStore } from './stores'
 
 
-onAnyMessage((e) => {
+onAnyMessage(
+    (e) => {
     console.log("in game", e);
 
     if (e.type === MessageTypes.StartGame) {
@@ -32,40 +33,42 @@ onAnyMessage((e) => {
     ].indexOf(e.type) >= 0) {
         const state = get(globalState)
         const playersInState = get(state.players)
-        if (e.type === MessageTypes.PassTurn) {
-            const info: PassInfo = e.content;
-            if (info.targetId === state.currentPlayerId) {
-                // notify all other players that your turn is in fact starting
-                startTurn()
-            }
+        const playerInfo: PlayerInfo = e.content;
+
+
+        switch (e.type) {
+            case MessageTypes.PassTurn:
+                const info: PassInfo = e.content;
+                if (info.targetId === state.currentPlayerId) {
+                    // notify all other players that your turn is in fact starting
+                    startTurn()
+                }
+                break;
+            case MessageTypes.StartTurn:
+                playersInState[playerInfo.id] = playerInfo;
+                state.prioPlayer.set(playerInfo.id);
+                state.turnPlayer.set(playerInfo.id);
+                break;
+
+            case MessageTypes.TakePrio:
+                playersInState[playerInfo.id] = playerInfo;
+                state.prioPlayer.set(playerInfo.id)
+                break;
+
+            case MessageTypes.PauseTime:
+                const content: PauseTime = e.content;
+                console.log("received pause request", content.paused);
+                state.timePaused.set(content.paused);
+                break;
+            case MessageTypes.TimedOut:
+                playersInState[e.origin] = e.content;;
+                break;
+            case MessageTypes.ReturnPrio:
+                takePrio();
+                break;
+            default:
+                break;
         }
-
-        if (e.type === MessageTypes.StartTurn) {
-            const playerInfo: PlayerInfo = e.content;
-
-            playersInState[playerInfo.id] = playerInfo;
-            state.prioPlayer.set(playerInfo.id)
-            state.turnPlayer.set(playerInfo.id)
-        }
-
-        if (e.type === MessageTypes.TakePrio) {
-            const playerInfo: PlayerInfo = e.content;
-
-            playersInState[playerInfo.id] = playerInfo;
-            state.prioPlayer.set(playerInfo.id)
-        }
-
-        if (e.type === MessageTypes.PauseTime) {
-            const content: PauseTime = e.content;
-            console.log("received pause request", content.paused);
-
-            state.timePaused.set(content.paused);
-        }
-
-        if (e.type === MessageTypes.TimedOut) {
-            playersInState[e.origin] = e.content;
-        }
-
         state.players.set(playersInState)
 
     }
@@ -126,7 +129,7 @@ function passTurn() {
         content: {
             targetId
         }
-    })
+    }, targetId)
 }
 
 function startTurn() {
@@ -172,6 +175,24 @@ function takePrio() {
             content: player
         }
     )
+}
+
+
+
+function returnPrio() {
+    const state = get(globalState);
+    const playerId = state.currentPlayerId;
+
+    const turnPlayerId = get(state.turnPlayer);
+
+    state.prioPlayer.set(turnPlayerId)
+
+    // only send it back to the turn player
+    sendMsg({
+        type: MessageTypes.ReturnPrio,
+        origin: playerId,
+        content: {}
+    }, turnPlayerId)
 }
 
 
@@ -221,8 +242,8 @@ interface GameState {
     takePrio?: () => void,
     passTurn?: () => void,
     toggleTime?: (pause: boolean) => void,
-    timeOut?: () => void
-
+    timeOut?: () => void,
+    returnPrio?: () => void
     // add function to send msgs
 
 }
@@ -242,7 +263,8 @@ function makeStates(): GameState {
         passTurn,
         takePrio,
         toggleTime,
-        timeOut
+        timeOut,
+        returnPrio
     };
     globalState.set(
         res
