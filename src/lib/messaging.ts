@@ -7,7 +7,7 @@ import type { Message } from "./types";
 let callbacks :  ((msg: Message) => void)[] = []
 
 export function onAnyMessage(callback: (msg: Message) => void, source="none") {
-    console.log("in on any message", source);
+
     callbacks.push(callback)
     dataChannels.subscribe((event) => {
         for (const [_, channel] of Object.entries(dataChannels.getDelta())) {
@@ -17,7 +17,6 @@ export function onAnyMessage(callback: (msg: Message) => void, source="none") {
                     call(msg)
                 })
             }
-          
         }
     });
 }
@@ -27,6 +26,7 @@ export function sendMsg(msg: Message, target?: string) {
     if (target) {
         console.log("only sending message to target", target, msg);
         get(dataChannels)[target].send(JSON.stringify(msg))
+        return;
     }
 
     console.log('sending msg to everyone', msg);

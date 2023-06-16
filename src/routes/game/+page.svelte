@@ -17,9 +17,7 @@
     let prioPlayerId = "";
     let turnPlayerId = "";
 
-    $: if (paused || !paused) {
-        console.log("pause change", paused);
-    }
+
 
     function rotatedArr(arr: Array<any>, index) {
         return arr.slice(index+1).concat(arr.slice(0, index));
@@ -77,8 +75,7 @@
                 }
             }
 
-            console.log(gameState.orderedPlayerIds, turnPlayerId, rotatedArr(Object.keys(players), gameState.orderedPlayerIds.indexOf(turnPlayerId)) );
-            
+ 
             gameState.players.set(tempPlayers);
         }, 1000);
     });

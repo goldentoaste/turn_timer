@@ -5,7 +5,8 @@
     import { players } from "$lib/players";
     import { joinRoom, dataChannels } from "$lib/rtc";
     import { roomId, playerId, gameStarted, globalState } from "$lib/stores";
-    import {startGame} from "$lib/game"
+    import {disconnect} from '$lib/game'
+
     let playerName = "";
 
     
@@ -17,7 +18,7 @@
         width=520,height=350,left=500,top=500`)
     }
 </script>
-
+<svelte:window on:beforeunload={disconnect} />
 <h1>
     Joining a game
 </h1>

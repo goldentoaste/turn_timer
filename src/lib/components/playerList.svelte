@@ -27,7 +27,7 @@
         playerItems = e.detail.items;
     }
     function onFinalize(e) {
-        console.log(e);
+
         playerItems = e.detail.items;
         orderedPlayerId.length = 0;
 

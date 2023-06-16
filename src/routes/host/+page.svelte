@@ -1,12 +1,12 @@
 <script lang="ts">
-    import { browser } from "$app/environment";
     import Button from "$lib/components/Button.svelte";
     import InfoIcon from "$lib/components/infoIcon.svelte";
     import InputField from "$lib/components/inputField.svelte";
     import PlayerList from "$lib/components/playerList.svelte";
     import { startGame } from "$lib/game";
     import { orderedPlayerId, players } from "$lib/players";
-    import { createRoom, joinRoom, dataChannels, cleanup } from "$lib/rtc";
+    import { createRoom, joinRoom, dataChannels } from "$lib/rtc";
+    import { cleanup } from "$lib/cleanUp";
     import {
         playerId,
         playersChanged,
@@ -18,15 +18,10 @@
         globalState,
     } from "$lib/stores";
 
-
     let playerName = "";
     $reserveTimeStore = "600";
     $bonusTimeStore = "120";
     $clutchTimeStore = "30";
-
-    $: if ($playersChanged || !$playersChanged) {
-        console.log(orderedPlayerId);
-    }
 
     function open() {
         // @ts-ignore
@@ -40,6 +35,7 @@ width=520,height=350,left=500,top=500`
     }
 </script>
 
+<svelte:window on:beforeunload={cleanup} />
 <h1>Hosting a game</h1>
 <div class="divider" />
 
@@ -164,3 +160,4 @@ width=520,height=350,left=500,top=500`
         margin: 0.5rem;
     }
 </style>
+

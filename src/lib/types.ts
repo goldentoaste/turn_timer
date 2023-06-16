@@ -21,7 +21,10 @@ const enum MessageTypes {
     StartTurn = "start_turn", // when received start turn, send info to all other players to sync up
     PauseTime = "pause_time",
     TimedOut = "time_out",
-    ReturnPrio = "return_prio"
+    ReturnPrio = "return_prio",
+    Disconnect = 'disconnect',
+    ReuqestToSync = "request_to_sync",
+    SyncResponse = "sync_response"
 
 }
 

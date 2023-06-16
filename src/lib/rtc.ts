@@ -14,8 +14,7 @@ class DataChannels {
     constructor(channel: RTCDataChannel, userName?: string) {
         this.channel = channel;
         this.callbacks = {};
-        console.log("in data channel constructor");
-
+    
         if (get(playerId).length > 0) {
             userName = players[get(playerId)].name
         }
@@ -29,13 +28,13 @@ class DataChannels {
             }
         });
         channel.onopen = (e) => {
-            console.log("channel opened", channel);
+          
             channel.send(
                 msg
             )
         }
         channel.onclose = (e) => {
-            console.log("channel onclose", channel);
+            
         }
         channel.onmessage = (e) => { this.onMessage(e) }
 
@@ -45,17 +44,15 @@ class DataChannels {
     subscribe(callback: (msg: Message) => void) {
         this.index += 1;
         this.callbacks[this.index] = callback;
-        console.log("subbed", Object.keys(this.callbacks).length);
+     
     }
 
     onMessage(e: MessageEvent<any> | any) {
         if (!e.data) return;
         const obj: Message = JSON.parse(e.data);
-
-
+        console.log("Message:", obj);
+        
         for (const [_, callback] of Object.entries(this.callbacks)) {
-            console.log("callin");
-
             callback(obj);
         }
     }
@@ -97,7 +94,7 @@ async function createRoom() {
 
 // when ever offer and anwser is created, attack the associated ice candidates to the documents
 async function joinRoom(id: string, userName: string) {
-    
+
     const roomDoc = doc(db, `rooms/${id}`)
 
     if (!((await getDoc(roomDoc)).exists())) {
@@ -114,16 +111,19 @@ async function joinRoom(id: string, userName: string) {
     }
 
     let currentUser = undefined;
-    if (window.localStorage.getItem("userId") === null) {
+
+
+    if (window.localStorage.getItem("userId") == null) {
         currentUser = await addDoc(users, {})
+        userId = currentUser.id;
         window.localStorage.setItem("userId", userId)
     }
     else {
-        const userdoc = doc(users, window.localStorage.getItem("userId"))
-        currentUser = await setDoc(userdoc, {})
+        currentUser = doc(users, window.localStorage.getItem("userId"));
+        await setDoc(currentUser, {});
+        userId = currentUser.id;
     }
 
-    userId = currentUser.id;
     playerId.set(userId);
     addPlayer(get(playerId), userName);
 
@@ -139,7 +139,7 @@ async function joinRoom(id: string, userName: string) {
     await Promise.all(
         userDocs.docs.map(async target => {
 
-            console.log("target", target.id)
+       
             // skip the current user
             if (target.id === userId) {
                 return;
@@ -195,7 +195,7 @@ async function joinRoom(id: string, userName: string) {
                         })
                         connection.ondatachannel = event => {
                             if (event.channel) {
-                                console.log("channel received")
+                       
                                 dataChannels.push(data.originId, new DataChannels(event.channel))
 
                             }
@@ -205,7 +205,7 @@ async function joinRoom(id: string, userName: string) {
                         // add new ice of the offer
                         onSnapshot(offerIceCandidates, (snap) => {
                             snap.docChanges().forEach(change => {
-                                console.log("adding ice in received offer")
+                        
                                 connection.addIceCandidate(change.doc.data())
                             })
                         })
@@ -260,7 +260,7 @@ async function joinRoom(id: string, userName: string) {
                         onSnapshot(candidates, snap => {
                             snap.docChanges().forEach(change => {
                                 if (change.type == "added") {
-                                    console.log("adding ice in received anwsers")
+                              
                                     connection.addIceCandidate(change.doc.data())
                                 }
                             })
@@ -281,5 +281,5 @@ async function joinRoom(id: string, userName: string) {
 
 export {
     createRoom, joinRoom, dataChannels,
-    connections, cleanup
+    connections
 };

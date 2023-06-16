@@ -1,78 +1,107 @@
 import { get, writable, type Writable } from "svelte/store";
 import { onAnyMessage, sendMsg } from "./messaging";
-import { orderedPlayerId, players } from "./players";
-import { gameStarted, globalState, playerId, prioPlayer, turnPlayer } from "./stores";
+import { deletedUsers, orderedPlayerId, players } from "./players";
+import { gameStarted, globalState, isHost, playerId, prioPlayer, turnPlayer } from "./stores";
 import { MessageTypes, type PassInfo, type PauseTime, type PlayerInfo, type StartGame } from "./types";
 
 import { bonusTime, bonusTimeStore, reserveTime, reserveTimeStore, clutchTime, clutchTimeStore } from './stores'
 
+console.log("running game.ts");
 
 onAnyMessage(
     (e) => {
-    console.log("in game", e);
+        console.log("received message", e.type);
 
-    if (e.type === MessageTypes.StartGame) {
-        const info: StartGame = e.content;
-        orderedPlayerId.length = 0;
-        for (const id of info.playerOrder) {
-            orderedPlayerId.push(id)
+        if (e.type === MessageTypes.StartGame) {
+            const info: StartGame = e.content;
+            orderedPlayerId.length = 0;
+            for (const id of info.playerOrder) {
+                orderedPlayerId.push(id)
+            }
+            reserveTimeStore.set(info.reserveTime + "")
+            bonusTimeStore.set(info.bonusTime + "")
+            clutchTimeStore.set(info.reserveTime + "")
+            initGame()
+            makeStates()
+            gameStarted.set(true)
         }
-        reserveTimeStore.set(info.reserveTime + "")
-        bonusTimeStore.set(info.bonusTime + "")
-        clutchTimeStore.set(info.reserveTime + "")
-        initGame()
-        makeStates()
-        gameStarted.set(true)
-        console.log("STARTING GAME");
-
-    }
-    // handling events that happens when the game window is open.
-    else if ([MessageTypes.PassTurn, MessageTypes.StartTurn, MessageTypes.TakePrio,
-    MessageTypes.PauseTime,
-    MessageTypes.TimedOut, "stuff"
-    ].indexOf(e.type) >= 0) {
-        const state = get(globalState)
-        const playersInState = get(state.players)
-        const playerInfo: PlayerInfo = e.content;
+        // handling events that happens when the game window is open.
+        else if (get(gameStarted)) {
+            const state = get(globalState)
+            const playersInState = get(state.players)
+            const playerInfo: PlayerInfo = e.content;
 
 
-        switch (e.type) {
-            case MessageTypes.PassTurn:
-                const info: PassInfo = e.content;
-                if (info.targetId === state.currentPlayerId) {
-                    // notify all other players that your turn is in fact starting
-                    startTurn()
-                }
-                break;
-            case MessageTypes.StartTurn:
-                playersInState[playerInfo.id] = playerInfo;
-                state.prioPlayer.set(playerInfo.id);
-                state.turnPlayer.set(playerInfo.id);
+            switch (e.type) {
+                case MessageTypes.PassTurn:
+                    const info: PassInfo = e.content;
+                    if (info.targetId === state.currentPlayerId) {
+                        // notify all other players that your turn is in fact starting
+                        startTurn()
+                    }
+                    break;
+                case MessageTypes.StartTurn:
+                    playersInState[playerInfo.id] = playerInfo;
+                    state.prioPlayer.set(playerInfo.id);
+                    state.turnPlayer.set(playerInfo.id);
+                    break;
+
+                case MessageTypes.TakePrio:
+                    playersInState[playerInfo.id] = playerInfo;
+                    state.prioPlayer.set(playerInfo.id)
+                    break;
+
+                case MessageTypes.PauseTime:
+                    const content: PauseTime = e.content;
+                    state.timePaused.set(content.paused);
+                    break;
+                case MessageTypes.TimedOut:
+                    playersInState[e.origin] = e.content;;
+                    break;
+                case MessageTypes.ReturnPrio:
+                    console.log("received return prio");
+
+                    takePrio();
+                    break;
+                case MessageTypes.Disconnect:
+                    const origin = e.origin;
+                    if (get(isHost)) {
+                        // cache disconnected players
+                        deletedUsers[origin] = e.content;
+                    }
+
+                    // remove this player from play dict
+                    delete playersInState[origin]
+                    // and player order.
+                    orderedPlayerId.splice(orderedPlayerId.indexOf(origin), 1);
+                    state.orderedPlayerIds = orderedPlayerId;
+                    break;
+
+                case MessageTypes.ReuqestToSync:
+                    if(get(isHost)){
+                        const sender = e.origin;
+                        
+                        sendMsg(
+                            {
+                                type: MessageTypes.SyncResponse,
+                                origin: state.currentPlayerId,
+                                content: get(state.players),
+                            },
+                            sender
+                        )
+                    }
+                    break;
+                case MessageTypes.SyncResponse:
+
                 break;
 
-            case MessageTypes.TakePrio:
-                playersInState[playerInfo.id] = playerInfo;
-                state.prioPlayer.set(playerInfo.id)
-                break;
+                default:
+                    break;
+            }
+            state.players.set(playersInState)
 
-            case MessageTypes.PauseTime:
-                const content: PauseTime = e.content;
-                console.log("received pause request", content.paused);
-                state.timePaused.set(content.paused);
-                break;
-            case MessageTypes.TimedOut:
-                playersInState[e.origin] = e.content;;
-                break;
-            case MessageTypes.ReturnPrio:
-                takePrio();
-                break;
-            default:
-                break;
         }
-        state.players.set(playersInState)
-
-    }
-}, "game")
+    }, "game")
 
 function initGame() {
     // reset each player's time
@@ -81,6 +110,16 @@ function initGame() {
         player.bonusTime = bonusTime;
         player.clutchTime = 0;
     }
+}
+
+function requestToSync(){
+    sendMsg(
+        {
+            type: MessageTypes.ReuqestToSync,
+            origin: get(playerId),
+            content:{}
+        }
+    )
 }
 
 
@@ -120,7 +159,6 @@ function passTurn() {
     }
     state.players.set(players)
 
-    console.log('passing turn from', playerId, "passing to", targetId);
     state.prioPlayer.set(targetId)
     state.turnPlayer.set(targetId)
     sendMsg({
@@ -135,7 +173,7 @@ function passTurn() {
 function startTurn() {
     const state = get(globalState)
     const playerId = state.currentPlayerId;
-    console.log("player starting turn", playerId)
+
 
     const players = get(state.players);
     const player = players[playerId];
@@ -159,7 +197,7 @@ function startTurn() {
 function takePrio() {
     const state = get(globalState)
     const playerId = state.currentPlayerId;
-    console.log("player taking prio", playerId)
+
 
     const players = get(state.players);
     const player = players[playerId];
@@ -199,7 +237,7 @@ function returnPrio() {
 function toggleTime(pause = true) {
     const state = get(globalState);
     const playerId = state.currentPlayerId;
-    console.log("pausing time", playerId);
+
 
     state.timePaused.set(pause);
     sendMsg(
@@ -212,12 +250,21 @@ function toggleTime(pause = true) {
         }
     )
 }
+function disconnect() {
+    const state = get(globalState);
+    const playerId = state.currentPlayerId;
 
+    sendMsg(
+        {
+            type: MessageTypes.Disconnect,
+            origin: playerId,
+            content: get(state.players)[playerId]
+        }
+    )
+}
 function timeOut() {
     const state = get(globalState);
     const playerId = state.currentPlayerId;
-    console.log("player timed out", playerId)
-
 
     const players = get(state.players)
     players[playerId].timedOut = true;
@@ -243,7 +290,8 @@ interface GameState {
     passTurn?: () => void,
     toggleTime?: (pause: boolean) => void,
     timeOut?: () => void,
-    returnPrio?: () => void
+    returnPrio?: () => void,
+    requestToSync?: ()=> void
     // add function to send msgs
 
 }
@@ -264,7 +312,8 @@ function makeStates(): GameState {
         takePrio,
         toggleTime,
         timeOut,
-        returnPrio
+        returnPrio, 
+        requestToSync
     };
     globalState.set(
         res
@@ -274,6 +323,6 @@ function makeStates(): GameState {
 }
 
 export {
-    type GameState, makeStates, startGame
+    type GameState, makeStates, startGame, disconnect
 }
 

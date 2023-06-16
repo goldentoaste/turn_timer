@@ -7,11 +7,11 @@ import { MessageTypes } from "./types";
 
 const players: { [id: string]: PlayerInfo } = {}
 const orderedPlayerId: string[] = []
-
+const deletedUsers : { [id: string]: PlayerInfo } = {}
 
 
 onAnyMessage((msg) => {
-    console.log(msg);
+
     
     if (msg.type === MessageTypes.PlayerJoined || msg.type === MessageTypes.PlayerInfoResponse) {
         const content: PlayerInfo = msg.content;
@@ -36,4 +36,4 @@ function addPlayer(id: string, name: string) {
 
 
 
-export { players, orderedPlayerId, addPlayer }
+export { players, orderedPlayerId, deletedUsers, addPlayer }
