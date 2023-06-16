@@ -24,8 +24,9 @@ const enum MessageTypes {
     ReturnPrio = "return_prio",
     Disconnect = 'disconnect',
     ReuqestToSync = "request_to_sync",
-    SyncResponse = "sync_response"
-
+    SyncResponse = "sync_response",
+    PlayerJoinMidGame = 'player_join_mid_game',
+    RestoreDisconnection = "restore_disc",
 }
 
 interface Message {

@@ -78,6 +78,11 @@
  
             gameState.players.set(tempPlayers);
         }, 1000);
+
+
+        setTimeout(()=>{
+            gameState.requestToSync();
+        }, 100)
     });
 </script>
 

@@ -1,6 +1,6 @@
 import { get } from "svelte/store";
 import { onAnyMessage, sendMsg } from "./messaging";
-import { playerId, playersChanged } from "./stores";
+import { gameStarted, playerId, playersChanged } from "./stores";
 import type { PlayerInfo } from "./types";
 
 import { MessageTypes } from "./types";
@@ -8,10 +8,13 @@ import { MessageTypes } from "./types";
 const players: { [id: string]: PlayerInfo } = {}
 const orderedPlayerId: string[] = []
 const deletedUsers : { [id: string]: PlayerInfo } = {}
-
+const deletedUserIndex : {[id:string]: number} = {}
 
 onAnyMessage((msg) => {
-
+    console.log("received message in player", msg);
+    if(get(gameStarted)){
+        return;
+    }
     
     if (msg.type === MessageTypes.PlayerJoined || msg.type === MessageTypes.PlayerInfoResponse) {
         const content: PlayerInfo = msg.content;
@@ -36,4 +39,4 @@ function addPlayer(id: string, name: string) {
 
 
 
-export { players, orderedPlayerId, deletedUsers, addPlayer }
+export { players, orderedPlayerId, deletedUsers, addPlayer,deletedUserIndex }

@@ -1,34 +1,39 @@
 import { get, writable, type Writable } from "svelte/store";
 import { onAnyMessage, sendMsg } from "./messaging";
-import { deletedUsers, orderedPlayerId, players } from "./players";
+import { addPlayer, deletedUserIndex, deletedUsers, orderedPlayerId, players } from "./players";
 import { gameStarted, globalState, isHost, playerId, prioPlayer, turnPlayer } from "./stores";
-import { MessageTypes, type PassInfo, type PauseTime, type PlayerInfo, type StartGame } from "./types";
+import { MessageTypes, type Message, type PassInfo, type PauseTime, type PlayerInfo, type StartGame } from "./types";
 
 import { bonusTime, bonusTimeStore, reserveTime, reserveTimeStore, clutchTime, clutchTimeStore } from './stores'
 
 console.log("running game.ts");
 
+
+
+function startGameAsClient(e: Message){
+    const info: StartGame = e.content;
+    orderedPlayerId.length = 0;
+    for (const id of info.playerOrder) {
+        orderedPlayerId.push(id)
+    }
+    reserveTimeStore.set(info.reserveTime + "");
+    bonusTimeStore.set(info.bonusTime + "");
+    clutchTimeStore.set(info.reserveTime + "");
+    initGame();
+    makeStates();
+    gameStarted.set(true);
+}
 onAnyMessage(
     (e) => {
-        console.log("received message", e.type);
+        console.log("received message in game", e.type);
 
         if (e.type === MessageTypes.StartGame) {
-            const info: StartGame = e.content;
-            orderedPlayerId.length = 0;
-            for (const id of info.playerOrder) {
-                orderedPlayerId.push(id)
-            }
-            reserveTimeStore.set(info.reserveTime + "")
-            bonusTimeStore.set(info.bonusTime + "")
-            clutchTimeStore.set(info.reserveTime + "")
-            initGame()
-            makeStates()
-            gameStarted.set(true)
+         startGameAsClient(e);
         }
         // handling events that happens when the game window is open.
         else if (get(gameStarted)) {
             const state = get(globalState)
-            const playersInState = get(state.players)
+            let playersInState = get(state.players)
             const playerInfo: PlayerInfo = e.content;
 
 
@@ -68,6 +73,7 @@ onAnyMessage(
                     if (get(isHost)) {
                         // cache disconnected players
                         deletedUsers[origin] = e.content;
+                        deletedUserIndex[origin] = orderedPlayerId.indexOf(origin);
                     }
 
                     // remove this player from play dict
@@ -78,9 +84,8 @@ onAnyMessage(
                     break;
 
                 case MessageTypes.ReuqestToSync:
-                    if(get(isHost)){
+                    if (get(isHost)) {
                         const sender = e.origin;
-                        
                         sendMsg(
                             {
                                 type: MessageTypes.SyncResponse,
@@ -92,9 +97,72 @@ onAnyMessage(
                     }
                     break;
                 case MessageTypes.SyncResponse:
+                    playersInState = e.content;
+                    break;
 
-                break;
+                case MessageTypes.PlayerJoined:
+                    if (get(isHost)) {
+                        const incomingId = e.origin;
+                        // this player disconnected previously
+                        if (deletedUsers[incomingId] !== undefined) {
 
+
+                            const oldPlayer = deletedUsers[incomingId];
+                            const oldPlayerIndex = deletedUserIndex[incomingId];
+
+                            players[incomingId] = oldPlayer;
+                            orderedPlayerId.splice(oldPlayerIndex, 0, incomingId);
+
+                            playersInState[incomingId] = oldPlayer;
+                            state.orderedPlayerIds = orderedPlayerId;
+
+                            sendMsg(
+                                {
+                                    type: MessageTypes.RestoreDisconnection,
+                                    origin: state.currentPlayerId,
+                                    content: {
+                                        order: orderedPlayerId,
+                                        player: oldPlayer
+                                    }
+                                }
+                            )
+                        }
+                        else {
+                            // add new player
+                            addPlayer(playerInfo.id, playerInfo.name)
+                            const addedPlayer = players[playerInfo.id];
+                            addedPlayer.bonusTime = state.bonusTime;
+                            addedPlayer.reserveTime = state.reserveTime;
+                            playersInState[addedPlayer.id] = addedPlayer;
+                            state.orderedPlayerIds = orderedPlayerId;
+
+                            sendMsg(
+                                {
+                                    type: MessageTypes.PlayerJoinMidGame,
+                                    origin: state.currentPlayerId,
+                                    content: addedPlayer
+                                }
+                            )
+                        }
+                    }
+                    break;
+
+                case MessageTypes.RestoreDisconnection:
+                    const restoredPlayer = e.content["player"];
+                    const order = e.content["order"]
+
+                    playersInState[restoredPlayer.id] = restoredPlayer;
+                    state.orderedPlayerIds = order;
+                    break;
+                case MessageTypes.PlayerJoinMidGame:
+
+                // TODO if current player *is* the one that joined,
+                // request for game rules from host.
+                    addPlayer(playerInfo.id, playerInfo.name)
+                    const addedPlayer = players[playerInfo.id];
+                    playersInState[addedPlayer.id] = addedPlayer;
+                    state.orderedPlayerIds = orderedPlayerId;
+                    break;
                 default:
                     break;
             }
@@ -112,12 +180,12 @@ function initGame() {
     }
 }
 
-function requestToSync(){
+function requestToSync() {
     sendMsg(
         {
             type: MessageTypes.ReuqestToSync,
             origin: get(playerId),
-            content:{}
+            content: {}
         }
     )
 }
@@ -291,7 +359,7 @@ interface GameState {
     toggleTime?: (pause: boolean) => void,
     timeOut?: () => void,
     returnPrio?: () => void,
-    requestToSync?: ()=> void
+    requestToSync?: () => void
     // add function to send msgs
 
 }
@@ -312,7 +380,7 @@ function makeStates(): GameState {
         takePrio,
         toggleTime,
         timeOut,
-        returnPrio, 
+        returnPrio,
         requestToSync
     };
     globalState.set(
