@@ -33,9 +33,6 @@ class DataChannels {
             channel.send(
                 msg
             )
-            // if (userName) {
-
-            // }   
         }
         channel.onclose = (e) => {
             console.log("channel onclose", channel);
@@ -46,13 +43,9 @@ class DataChannels {
 
 
     subscribe(callback: (msg: Message) => void) {
-
         this.index += 1;
-
         this.callbacks[this.index] = callback;
         console.log("subbed", Object.keys(this.callbacks).length);
-
-
     }
 
     onMessage(e: MessageEvent<any> | any) {
@@ -104,22 +97,37 @@ async function createRoom() {
 
 // when ever offer and anwser is created, attack the associated ice candidates to the documents
 async function joinRoom(id: string, userName: string) {
+    
+    const roomDoc = doc(db, `rooms/${id}`)
 
-    const roomDoc = await doc(db, `rooms/${id}`)
-
-    if(!((await getDoc(roomDoc)).exists())){
+    if (!((await getDoc(roomDoc)).exists())) {
         return "Room does not exist, check if the id is correct."
     }
 
     const users = collection(roomDoc, "users")
 
     // check if user id exist in local storage.
+    if (!window) {
+        console.log("error in RTC.ts, window does not exist in current context");
 
+        return "window does not exist in current context, somehow."
+    }
 
-    const currentUser = await addDoc(users, {})
+    let currentUser = undefined;
+    if (window.localStorage.getItem("userId") === null) {
+        currentUser = await addDoc(users, {})
+        window.localStorage.setItem("userId", userId)
+    }
+    else {
+        const userdoc = doc(users, window.localStorage.getItem("userId"))
+        currentUser = await setDoc(userdoc, {})
+    }
+
     userId = currentUser.id;
     playerId.set(userId);
     addPlayer(get(playerId), userName);
+
+
     const currentOffers = collection(currentUser, "offers")
     const currentAnwsers = collection(currentUser, "anwsers")
 
@@ -268,14 +276,7 @@ async function joinRoom(id: string, userName: string) {
 }
 
 
-async function cleanup() {
-    if (get(isHost) && get(roomId)) {
-        await deleteDoc(doc(db, `rooms/${get(roomId)}`))
-    }
-    for (const [_, connection] of Object.entries(connections)) {
-        connection.close()
-    }
-}
+
 
 
 export {

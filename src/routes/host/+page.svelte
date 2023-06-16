@@ -17,11 +17,7 @@
         gameStarted,
         globalState,
     } from "$lib/stores";
-    import { onDestroy, onMount } from "svelte";
 
-    onDestroy(() => {
-        if (browser) cleanup();
-    });
 
     let playerName = "";
     $reserveTimeStore = "600";
@@ -33,6 +29,7 @@
     }
 
     function open() {
+        // @ts-ignore
         window.gameState = $globalState;
         window.open(
             "/game",

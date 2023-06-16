@@ -7,7 +7,8 @@ import { MessageTypes, type PassInfo, type PauseTime, type PlayerInfo, type Star
 import { bonusTime, bonusTimeStore, reserveTime, reserveTimeStore, clutchTime, clutchTimeStore } from './stores'
 
 
-onAnyMessage((e) => {
+onAnyMessage(
+    (e) => {
     console.log("in game", e);
 
     if (e.type === MessageTypes.StartGame) {

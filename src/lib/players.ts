@@ -11,6 +11,8 @@ const orderedPlayerId: string[] = []
 
 
 onAnyMessage((msg) => {
+    console.log(msg);
+    
     if (msg.type === MessageTypes.PlayerJoined || msg.type === MessageTypes.PlayerInfoResponse) {
         const content: PlayerInfo = msg.content;
 

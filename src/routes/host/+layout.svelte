@@ -1,2 +1,8 @@
+<script lang="ts">
 
-<slot/>
+
+    
+</script>
+
+<!-- <svelte:window on:beforeunload={cleanup} /> -->
+<slot />
