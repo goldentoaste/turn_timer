@@ -19,6 +19,8 @@
     <a href="https://www.autohotkey.com/v2/"> AutoHotKey </a>
     with the following code in order to pin the window on top over your game window.
 </p>
+
+AutoHotKey v2:
 <pre>
     <code>
     ^space::
@@ -27,6 +29,12 @@
         {"}"}
     </code>
 </pre>
+
+Old ahk syntax:
+<pre><code>
+    ^SPACE::  Winset, Alwaysontop, , A
+</code></pre>
+
 <div class="root">
     <div class="buttonHolder">
         <Button
