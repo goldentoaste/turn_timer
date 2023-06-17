@@ -11,14 +11,16 @@
     let normalTotal = reserve + bonus;
 </script>
 
-<div class="hpParent" class:isBig class:hide>
+<div class="hpParent" class:isBig  class:hide>
     <div
+   
         class="reserve bar"
         style="background-color: var(--blue); width: {Math.round(
             (player.reserveTime / normalTotal) * 100
         )}%;"
     />
     <div
+   
         class="bonus bar"
         style="background-color: var(--yellow); width: {Math.round(
             (player.bonusTime / normalTotal) * 100
@@ -27,6 +29,7 @@
 
     {#if player.bonusTime <= 0}
         <div
+        class:hide
             class="clutch bar"
             style="background-color: var(--green); width: {Math.round(
                 (player.clutchTime / normalTotal) * 100
@@ -37,27 +40,34 @@
 
 <style>
     .hide {
-        height: 0;
+        height: 0!important;
         overflow: hidden;
+        background-color: transparent!important;    
     }
+
+
 
     .bar {
         height: 3px;
-        transition-property: height, width;
+        transition-property:  width;
         transition-timing-function: ease-out;
         transition-duration: 0.4s;
         margin-top: 0.1rem;
-
-       
     }
 
     .hpParent {
+        
         width: 100%;
+        height: 3px;
         display: flex;
         flex-direction: row;
 
         justify-content: left;
         background-color: var(--bg);
+
+        transition: height 0.4s ease-out;
+
+
     }
 
     .isBig > .bar {
