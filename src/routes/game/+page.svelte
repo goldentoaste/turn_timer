@@ -119,7 +119,7 @@
             </div>
         </div>
 
-        <div class="hGroup">
+        <div class="botButtons">
             <Button
                 disabled={player.timedOut || (thisPlayerHasTurn && thisPlayerHasPrio)}
                 on:click={() => {
@@ -158,6 +158,26 @@
 {/if}
 
 <style>
+
+    .botButtons {
+
+        position: fixed;
+        bottom: 0;
+        left: 0;
+
+        width: 100%;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        display: flex;
+
+        border-top: var(--fg1) 2px solid;
+        padding:0.5rem;
+
+        background-color: var(--bg);
+    }
+
     .prioWrapper {
         display: flex;
         justify-content: center;
@@ -173,10 +193,10 @@
         display: flex;
         flex-direction: column;
 
-        padding-left: 1rem;
-        margin-left: 1rem;
+        padding-left: 0.5rem;
+        margin-left: 0.5rem;
         border-left: 2px solid var(--fg1);
-        gap: 0.5rem;
+     
 
         justify-content: center;
     }

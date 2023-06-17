@@ -35,49 +35,51 @@
     class:challenge={!playerHasTurn && playerHasPrio}
     class:timeOut={player.timedOut}
 >
-<div>
-
-    <div class="stuff">
-        <div
-            class="circle"
-            style="background-color: var(--{colors[
-                gameState.orderedPlayerIds.indexOf(player.id) % colors.length
-            ]});"
-        />
-        <div>
-            {#if isBig}
-                <h2>
-                    {player.name}
-                </h2>
-            {:else}
-                <p style={playerHasPrio?"color:var(--red);":""}>{player.name}</p>
-            {/if}
-
-            <div class="centerAlign">
-                {#key [player.bonusTime, player.reserveTime, player.clutchTime]}
-                    <p class:largeFont={isBig}>
-                        {getTimeStr(
-                            player.bonusTime +
-                                player.reserveTime +
-                                player.clutchTime
-                        )}
+    <div>
+        <div class="stuff">
+            <div
+                class="circle"
+                style="background-color: var(--{colors[
+                    gameState.orderedPlayerIds.indexOf(player.id) %
+                        colors.length
+                ]});"
+            />
+            <div>
+                {#if isBig}
+                    <h2>
+                        {player.name}
+                    </h2>
+                {:else}
+                    <p style={playerHasPrio ? "color:var(--red);" : ""}>
+                        {player.name}
                     </p>
-                {/key}
+                {/if}
+
+                <div class="centerAlign">
+                    {#key [player.bonusTime, player.reserveTime, player.clutchTime]}
+                        <p class:largeFont={isBig}>
+                            {getTimeStr(
+                                player.bonusTime +
+                                    player.reserveTime +
+                                    player.clutchTime
+                            )}
+                        </p>
+                    {/key}
+                </div>
             </div>
         </div>
+        <HpBar
+            bind:player
+            {isBig}
+            reserve={gameState.reserveTime}
+            bonus={gameState.bonusTime}
+            hide={!playerHasPrio && prioPlayerId != turnPlayerId && !isBig}
+        />
     </div>
-    <HpBar
-        bind:player
-        {isBig}
-        reserve={gameState.reserveTime}
-        bonus={gameState.bonusTime}
-        hide={!playerHasPrio && prioPlayerId != turnPlayerId && !isBig}
-    />
-</div>
 </div>
 
 <style>
-    p{
+    p {
         transition: color 0.4s ease-out;
     }
     .timeOut {
@@ -93,12 +95,11 @@
 
     .playerParent {
         min-width: 110px;
-        padding: 0.75rem;
+        padding: 0.5rem;
         display: flex;
         flex-direction: column;
 
         justify-content: center;
-        
 
         background-color: var(--bg1);
         border: 2px solid var(--bg2);
@@ -112,7 +113,7 @@
     }
 
     .notPrio {
-        padding: 0.25rem 0.75rem;
+        padding: 0.25rem 0.5rem;
         margin: 0.25rem 0.5rem;
         filter: opacity(0.5);
     }
@@ -120,10 +121,8 @@
         border: var(--red) solid 2px;
     }
     .challenge {
-       flex:1;
-
-            /* padding-top: 1.5rem;
-            padding-bottom: 1.5rem; */
+        padding-top: 1.5rem;
+        padding-bottom: 1.5rem;
     }
 
     .largeFont {
@@ -137,6 +136,7 @@
     }
 
     .isBig {
+        width:170px;
         justify-content: center;
         padding: 2rem 1rem;
     }

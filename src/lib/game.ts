@@ -5,6 +5,7 @@ import { gameStarted, globalState, isHost, playerId, prioPlayer, turnPlayer } fr
 import { MessageTypes, type Message, type PassInfo, type PauseTime, type PlayerInfo, type StartGame } from "./types";
 
 import { bonusTime, bonusTimeStore, reserveTime, reserveTimeStore, clutchTime, clutchTimeStore } from './stores'
+import { dataChannels } from "./rtc";
 
 console.log("running game.ts");
 
@@ -18,15 +19,17 @@ function startGameAsClient(e: Message){
     }
     reserveTimeStore.set(info.reserveTime + "");
     bonusTimeStore.set(info.bonusTime + "");
-    clutchTimeStore.set(info.reserveTime + "");
+    clutchTimeStore.set(info.clutchTime + "");
     initGame();
     makeStates();
     gameStarted.set(true);
 }
+
+
+
 onAnyMessage(
     (e) => {
         console.log("received message in game", e.type);
-
         if (e.type === MessageTypes.StartGame) {
          startGameAsClient(e);
         }
@@ -81,6 +84,9 @@ onAnyMessage(
                     // and player order.
                     orderedPlayerId.splice(orderedPlayerId.indexOf(origin), 1);
                     state.orderedPlayerIds = orderedPlayerId;
+
+                    dataChannels.pop(origin)
+
                     break;
 
                 case MessageTypes.ReuqestToSync:

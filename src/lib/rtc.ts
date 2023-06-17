@@ -5,7 +5,7 @@ import { deltaStore } from "./customStores";
 import { get } from "svelte/store";
 import { MessageTypes, type Message } from "./types";
 import { addPlayer, players } from "./players";
-
+import { dev } from '$app/environment';
 class DataChannels {
     channel: RTCDataChannel;
 
@@ -14,7 +14,7 @@ class DataChannels {
     constructor(channel: RTCDataChannel, userName?: string) {
         this.channel = channel;
         this.callbacks = {};
-    
+
         if (get(playerId).length > 0) {
             userName = players[get(playerId)].name
         }
@@ -28,14 +28,17 @@ class DataChannels {
             }
         });
         channel.onopen = (e) => {
-          
+
             channel.send(
                 msg
             )
         }
         channel.onclose = (e) => {
-            
+            console.log("channel closed, removing data channel from delta store");
+
+            dataChannels.searchNPop(this)
         }
+
         channel.onmessage = (e) => { this.onMessage(e) }
 
     }
@@ -44,14 +47,14 @@ class DataChannels {
     subscribe(callback: (msg: Message) => void) {
         this.index += 1;
         this.callbacks[this.index] = callback;
-     
+
     }
 
     onMessage(e: MessageEvent<any> | any) {
         if (!e.data) return;
         const obj: Message = JSON.parse(e.data);
         console.log("Message:", obj);
-        
+
         for (const [_, callback] of Object.entries(this.callbacks)) {
             callback(obj);
         }
@@ -113,7 +116,7 @@ async function joinRoom(id: string, userName: string) {
     let currentUser = undefined;
 
 
-    if (window.localStorage.getItem("userId") == null) {
+    if (window.localStorage.getItem("userId") == null || dev) {
         currentUser = await addDoc(users, {})
         userId = currentUser.id;
         window.localStorage.setItem("userId", userId)
@@ -139,7 +142,7 @@ async function joinRoom(id: string, userName: string) {
     await Promise.all(
         userDocs.docs.map(async target => {
 
-       
+
             // skip the current user
             if (target.id === userId) {
                 return;
@@ -195,7 +198,7 @@ async function joinRoom(id: string, userName: string) {
                         })
                         connection.ondatachannel = event => {
                             if (event.channel) {
-                       
+
                                 dataChannels.push(data.originId, new DataChannels(event.channel))
 
                             }
@@ -205,7 +208,7 @@ async function joinRoom(id: string, userName: string) {
                         // add new ice of the offer
                         onSnapshot(offerIceCandidates, (snap) => {
                             snap.docChanges().forEach(change => {
-                        
+
                                 connection.addIceCandidate(change.doc.data())
                             })
                         })
@@ -260,7 +263,7 @@ async function joinRoom(id: string, userName: string) {
                         onSnapshot(candidates, snap => {
                             snap.docChanges().forEach(change => {
                                 if (change.type == "added") {
-                              
+
                                     connection.addIceCandidate(change.doc.data())
                                 }
                             })
