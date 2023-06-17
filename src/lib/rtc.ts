@@ -263,7 +263,6 @@ async function joinRoom(id: string, userName: string) {
                         onSnapshot(candidates, snap => {
                             snap.docChanges().forEach(change => {
                                 if (change.type == "added") {
-
                                     connection.addIceCandidate(change.doc.data())
                                 }
                             })

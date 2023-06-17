@@ -7,8 +7,6 @@ import { MessageTypes, type Message, type PassInfo, type PauseTime, type PlayerI
 import { bonusTime, bonusTimeStore, reserveTime, reserveTimeStore, clutchTime, clutchTimeStore } from './stores'
 import { dataChannels } from "./rtc";
 
-console.log("running game.ts");
-
 
 
 function startGameAsClient(e: Message){
@@ -29,7 +27,7 @@ function startGameAsClient(e: Message){
 
 onAnyMessage(
     (e) => {
-        console.log("received message in game", e.type);
+     
         if (e.type === MessageTypes.StartGame) {
          startGameAsClient(e);
         }
@@ -67,7 +65,7 @@ onAnyMessage(
                     playersInState[e.origin] = e.content;;
                     break;
                 case MessageTypes.ReturnPrio:
-                    console.log("received return prio");
+
 
                     takePrio();
                     break;
@@ -111,8 +109,6 @@ onAnyMessage(
                         const incomingId = e.origin;
                         // this player disconnected previously
                         if (deletedUsers[incomingId] !== undefined) {
-
-
                             const oldPlayer = deletedUsers[incomingId];
                             const oldPlayerIndex = deletedUserIndex[incomingId];
 
@@ -219,12 +215,12 @@ function startGame() {
 
 function passTurn() {
     const state = get(globalState)
-    const playerId = state.currentPlayerId;
+    const turnPlayerId =get( state.turnPlayer);
     let targetId = "";
     let ids = state.orderedPlayerIds;
     let players = get(state.players)
 
-    for (let i = 1, start = (state.orderedPlayerIds.indexOf(playerId)); i < state.orderedPlayerIds.length; i++) {
+    for (let i = 1, start = (state.orderedPlayerIds.indexOf(turnPlayerId)); i < state.orderedPlayerIds.length; i++) {
         const index = (start + i) % ids.length;
         if (!players[ids[index]].timedOut) {
             targetId = ids[index];
@@ -237,7 +233,7 @@ function passTurn() {
     state.turnPlayer.set(targetId)
     sendMsg({
         type: MessageTypes.PassTurn,
-        origin: playerId,
+        origin: turnPlayerId,
         content: {
             targetId
         }
@@ -327,6 +323,15 @@ function toggleTime(pause = true) {
 function disconnect() {
     const state = get(globalState);
     const playerId = state.currentPlayerId;
+
+    if (playerId === get(state.turnPlayer)){
+        passTurn()
+    }
+    else{
+        if(playerId === get(state.prioPlayer)){
+            returnPrio();
+        }
+    }
 
     sendMsg(
         {

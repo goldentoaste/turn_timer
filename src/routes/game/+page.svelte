@@ -155,7 +155,7 @@
                 {/if}
             </Button>
             <Button
-                disabled={!thisPlayerHasTurn || player.timedOut}
+                disabled={ player.timedOut}
                 on:click={() => {
                     gameState.passTurn();
                 }}>Pass Turn</Button
@@ -192,7 +192,7 @@
         display: flex;
 
         border-top: var(--fg1) 2px solid;
-        padding: 0.5rem;
+        padding: 0.5rem 0 ;
 
         background-color: var(--bg);
     }

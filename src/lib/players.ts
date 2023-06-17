@@ -11,7 +11,7 @@ const deletedUsers : { [id: string]: PlayerInfo } = {}
 const deletedUserIndex : {[id:string]: number} = {}
 
 onAnyMessage((msg) => {
-    console.log("received message in player", msg);
+   
     if(get(gameStarted)){
         return;
     }

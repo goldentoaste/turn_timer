@@ -162,11 +162,11 @@
         align-items: center;
     }
 
-    .isBig > .stuff > .circle {
+    :global(.isBig > .stuff > .circle) {
         margin: 0.25rem;
         margin-right: 0.5rem;
     }
-    .isBig > .stuff {
+    :global(.isBig > .stuff) {
         align-items: flex-start;
         margin-right: 1rem;
     }

@@ -9,19 +9,19 @@
     import { cleanup } from "$lib/cleanUp";
     import {
         playerId,
-        playersChanged,
+       
         roomId,
         bonusTimeStore,
         clutchTimeStore,
         reserveTimeStore,
-        gameStarted,
+
         globalState,
     } from "$lib/stores";
 
     let playerName = "";
-    $reserveTimeStore = "600";
+    $reserveTimeStore = "480";
     $bonusTimeStore = "120";
-    $clutchTimeStore = "30";
+    $clutchTimeStore = "20";
 
     function open() {
         // @ts-ignore
