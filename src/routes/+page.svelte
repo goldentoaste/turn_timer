@@ -31,9 +31,13 @@ AutoHotKey v2:
 </pre>
 
 Old ahk syntax:
-<pre><code>
+<pre>
+    <code>
+    
     ^SPACE::  Winset, Alwaysontop, , A
-</code></pre>
+    
+    </code>
+</pre>
 
 <div class="root">
     <div class="buttonHolder">
@@ -76,7 +80,6 @@ Old ahk syntax:
         width: 2px;
         background-color: var(--bg3);
     }
-
 
     pre {
         max-width: 500px;
