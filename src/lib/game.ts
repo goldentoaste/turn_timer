@@ -271,9 +271,11 @@ function takePrio() {
 
     const players = get(state.players);
     const player = players[playerId];
-    if (player.bonusTime <= 0) {
         player.clutchTime = clutchTime;
-    }
+        console.log("clutching");
+
+    console.log("in take prio, clutch time", player.clutchTime);
+    
     state.players.set(players)
     state.prioPlayer.set(playerId)
     sendMsg(

@@ -73,6 +73,7 @@
             {isBig}
             reserve={gameState.reserveTime}
             bonus={gameState.bonusTime}
+            clutch={gameState.clutchTime}
             hide={!playerHasPrio && prioPlayerId != turnPlayerId && !isBig}
         />
     </div>
@@ -138,7 +139,7 @@
     .isBig {
         width:170px;
         justify-content: center;
-        padding: 2rem 1rem;
+        padding: 2rem 0.75rem;
     }
 
     h2 {
@@ -149,8 +150,9 @@
         border: 2px solid var(--fg);
         border-radius: 50%;
 
-        width: 1rem;
-        height: 1rem;
+        width: 0.8rem;
+        min-width: 0.8rem;
+        height: 0.8rem;
 
         transition: background-color 0.4s ease-out;
         margin-right: 0.5rem;
