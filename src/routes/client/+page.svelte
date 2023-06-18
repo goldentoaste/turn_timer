@@ -9,8 +9,6 @@
 
     let playerName = "";
 
-    
-
     function open(){
         // @ts-ignore
         window.gameState = $globalState;

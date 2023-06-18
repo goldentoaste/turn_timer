@@ -137,7 +137,7 @@
     }
 
     .isBig {
-        width:170px;
+        min-width:170px;
         justify-content: center;
         padding: 2rem 0.75rem;
     }

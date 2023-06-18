@@ -9,7 +9,7 @@ import { dataChannels } from "./rtc";
 
 
 
-function startGameAsClient(e: Message){
+function startGameAsClient(e: Message) {
     const info: StartGame = e.content;
     orderedPlayerId.length = 0;
     for (const id of info.playerOrder) {
@@ -27,9 +27,9 @@ function startGameAsClient(e: Message){
 
 onAnyMessage(
     (e) => {
-     
+
         if (e.type === MessageTypes.StartGame) {
-         startGameAsClient(e);
+            startGameAsClient(e);
         }
         // handling events that happens when the game window is open.
         else if (get(gameStarted)) {
@@ -67,7 +67,7 @@ onAnyMessage(
                 case MessageTypes.ReturnPrio:
 
 
-                    takePrio();
+                    takePrio(false);
                     break;
                 case MessageTypes.Disconnect:
                     const origin = e.origin;
@@ -158,8 +158,8 @@ onAnyMessage(
                     break;
                 case MessageTypes.PlayerJoinMidGame:
 
-                // TODO if current player *is* the one that joined,
-                // request for game rules from host.
+                    // TODO if current player *is* the one that joined,
+                    // request for game rules from host.
                     addPlayer(playerInfo.id, playerInfo.name)
                     const addedPlayer = players[playerInfo.id];
                     playersInState[addedPlayer.id] = addedPlayer;
@@ -215,7 +215,7 @@ function startGame() {
 
 function passTurn() {
     const state = get(globalState)
-    const turnPlayerId =get( state.turnPlayer);
+    const turnPlayerId = get(state.turnPlayer);
     let targetId = "";
     let ids = state.orderedPlayerIds;
     let players = get(state.players)
@@ -264,18 +264,23 @@ function startTurn() {
     )
 }
 
-function takePrio() {
+function takePrio(shouldClutch=true) {
     const state = get(globalState)
     const playerId = state.currentPlayerId;
 
 
     const players = get(state.players);
     const player = players[playerId];
+
+
+    if (state.bonusTime - player.bonusTime < state.clutchTime && shouldClutch) {
         player.clutchTime = clutchTime;
-        console.log("clutching");
+    }
+
+    console.log("clutching");
 
     console.log("in take prio, clutch time", player.clutchTime);
-    
+
     state.players.set(players)
     state.prioPlayer.set(playerId)
     sendMsg(
@@ -326,11 +331,11 @@ function disconnect() {
     const state = get(globalState);
     const playerId = state.currentPlayerId;
 
-    if (playerId === get(state.turnPlayer)){
+    if (playerId === get(state.turnPlayer)) {
         passTurn()
     }
-    else{
-        if(playerId === get(state.prioPlayer)){
+    else {
+        if (playerId === get(state.prioPlayer)) {
             returnPrio();
         }
     }

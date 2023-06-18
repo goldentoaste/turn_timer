@@ -15,6 +15,8 @@
     } else {
         total = reserve + bonus;
     }
+
+
 </script>
 
 <div class="hpParent" class:isBig class:hide>
@@ -52,7 +54,7 @@
         transition-property: width;
         transition-timing-function: ease-out;
         transition-duration: 0.4s;
-        margin-top: 0.1rem;
+     
     }
 
     .hpParent {
