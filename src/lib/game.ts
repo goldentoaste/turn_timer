@@ -157,7 +157,7 @@ onAnyMessage(
                 case MessageTypes.PlayerJoinMidGame:
 
                 // TODO if current player *is* the one that joined,
-                // request for game rules from host.
+                // request for game rules from host.    
                     addPlayer(playerInfo.id, playerInfo.name)
                     const addedPlayer = players[playerInfo.id];
                     playersInState[addedPlayer.id] = addedPlayer;
