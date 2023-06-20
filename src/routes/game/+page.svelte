@@ -17,10 +17,13 @@
     let prioPlayerId = "";
     let turnPlayerId = "";
 
+    let playerList: HTMLElement;
+    let parentDiv: HTMLElement;
 
-
+    let boxHeight;
+    let boxWidth;
     function rotatedArr(arr: Array<any>, index) {
-        return arr.slice(index+1).concat(arr.slice(0, index));
+        return arr.slice(index + 1).concat(arr.slice(0, index));
     }
 
     onMount(() => {
@@ -75,26 +78,41 @@
                 }
             }
 
- 
             gameState.players.set(tempPlayers);
         }, 1000);
 
-
-        setTimeout(()=>{
+        setTimeout(() => {
             gameState.requestToSync();
-        }, 100)
+
+            // also adjust window size to this
+
+            playerList.style.setProperty(
+                "min-height",
+                `${parentDiv.offsetHeight}px`
+            );
+            window.resizeTo(
+                parentDiv.offsetWidth + 50,
+                parentDiv.offsetHeight + 150
+            );
+        }, 100);
     });
 </script>
 
-
-<svelte:head >
-    <title>{player?player.name:"Loading"}</title>
+<svelte:head>
+    <title>{player ? player.name : "Loading"}</title>
 </svelte:head>
+
 
 {#if !gameState}
     <h1>Loading...</h1>
 {:else}
-    <div transition:fade>
+    <div
+        id="gamedisplay"
+        transition:fade
+        bind:this={parentDiv}
+        bind:clientHeight={boxHeight}
+        bind:clientWidth={boxWidth}
+    >
         <div class="top">
             <div class="prioWrapper">
                 <PlayerComp
@@ -105,23 +123,23 @@
                     {prioPlayerId}
                 />
             </div>
-            <div class="playerList">
+            <div class="playerList" bind:this={playerList}>
                 {#each rotatedArr(gameState.orderedPlayerIds, gameState.orderedPlayerIds.indexOf(turnPlayerId)) as playerId}
-                        <PlayerComp
-                            {gameState}
-                            player={players[playerId]}
-                            {turnPlayerId}
-                            {prioPlayerId}
-                        />
-                        <div class="divider" />
-                   
+                    <PlayerComp
+                        {gameState}
+                        player={players[playerId]}
+                        {turnPlayerId}
+                        {prioPlayerId}
+                    />
+                    <div class="divider" />
                 {/each}
             </div>
         </div>
 
-        <div class="hGroup">
+        <div class="botButtons">
             <Button
-                disabled={player.timedOut || (thisPlayerHasTurn && thisPlayerHasPrio)}
+                disabled={player.timedOut ||
+                    (thisPlayerHasTurn && thisPlayerHasPrio)}
                 on:click={() => {
                     if (thisPlayerHasPrio) {
                         gameState.returnPrio();
@@ -137,7 +155,7 @@
                 {/if}
             </Button>
             <Button
-                disabled={!thisPlayerHasTurn || player.timedOut}
+                disabled={ player.timedOut}
                 on:click={() => {
                     gameState.passTurn();
                 }}>Pass Turn</Button
@@ -158,6 +176,27 @@
 {/if}
 
 <style>
+    #gamedisplay{
+      width: fit-content;
+    }
+    .botButtons {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+
+        width: 100%;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        display: flex;
+
+        border-top: var(--fg1) 2px solid;
+        padding: 0.5rem 0 ;
+
+        background-color: var(--bg);
+    }
+
     .prioWrapper {
         display: flex;
         justify-content: center;
@@ -173,10 +212,9 @@
         display: flex;
         flex-direction: column;
 
-        padding-left: 1rem;
-        margin-left: 1rem;
+        padding-left: 0.5rem;
+        margin-left: 0.5rem;
         border-left: 2px solid var(--fg1);
-        gap: 0.5rem;
 
         justify-content: center;
     }

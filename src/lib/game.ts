@@ -5,8 +5,7 @@ import { gameStarted, globalState, isHost, playerId, prioPlayer, turnPlayer } fr
 import { MessageTypes, type Message, type PassInfo, type PauseTime, type PlayerInfo, type StartGame } from "./types";
 
 import { bonusTime, bonusTimeStore, reserveTime, reserveTimeStore, clutchTime, clutchTimeStore } from './stores'
-
-console.log("running game.ts");
+import { dataChannels } from "./rtc";
 
 
 
@@ -18,15 +17,17 @@ function startGameAsClient(e: Message){
     }
     reserveTimeStore.set(info.reserveTime + "");
     bonusTimeStore.set(info.bonusTime + "");
-    clutchTimeStore.set(info.reserveTime + "");
+    clutchTimeStore.set(info.clutchTime + "");
     initGame();
     makeStates();
     gameStarted.set(true);
 }
+
+
+
 onAnyMessage(
     (e) => {
-        console.log("received message in game", e.type);
-
+     
         if (e.type === MessageTypes.StartGame) {
          startGameAsClient(e);
         }
@@ -64,7 +65,7 @@ onAnyMessage(
                     playersInState[e.origin] = e.content;;
                     break;
                 case MessageTypes.ReturnPrio:
-                    console.log("received return prio");
+
 
                     takePrio();
                     break;
@@ -81,6 +82,9 @@ onAnyMessage(
                     // and player order.
                     orderedPlayerId.splice(orderedPlayerId.indexOf(origin), 1);
                     state.orderedPlayerIds = orderedPlayerId;
+
+                    dataChannels.pop(origin)
+
                     break;
 
                 case MessageTypes.ReuqestToSync:
@@ -105,8 +109,6 @@ onAnyMessage(
                         const incomingId = e.origin;
                         // this player disconnected previously
                         if (deletedUsers[incomingId] !== undefined) {
-
-
                             const oldPlayer = deletedUsers[incomingId];
                             const oldPlayerIndex = deletedUserIndex[incomingId];
 
@@ -213,12 +215,12 @@ function startGame() {
 
 function passTurn() {
     const state = get(globalState)
-    const playerId = state.currentPlayerId;
+    const turnPlayerId =get( state.turnPlayer);
     let targetId = "";
     let ids = state.orderedPlayerIds;
     let players = get(state.players)
 
-    for (let i = 1, start = (state.orderedPlayerIds.indexOf(playerId)); i < state.orderedPlayerIds.length; i++) {
+    for (let i = 1, start = (state.orderedPlayerIds.indexOf(turnPlayerId)); i < state.orderedPlayerIds.length; i++) {
         const index = (start + i) % ids.length;
         if (!players[ids[index]].timedOut) {
             targetId = ids[index];
@@ -231,7 +233,7 @@ function passTurn() {
     state.turnPlayer.set(targetId)
     sendMsg({
         type: MessageTypes.PassTurn,
-        origin: playerId,
+        origin: turnPlayerId,
         content: {
             targetId
         }
@@ -321,6 +323,15 @@ function toggleTime(pause = true) {
 function disconnect() {
     const state = get(globalState);
     const playerId = state.currentPlayerId;
+
+    if (playerId === get(state.turnPlayer)){
+        passTurn()
+    }
+    else{
+        if(playerId === get(state.prioPlayer)){
+            returnPrio();
+        }
+    }
 
     sendMsg(
         {

@@ -23,6 +23,22 @@ function deltaStore<T>(initial: { [key: string]: T }) {
             let temp = { ...delta }
             delta = {}
             return temp;
+        },
+        pop: (key: string) => {
+            update((items) => {
+                delete items[key]
+                return items;
+            })
+        },
+        searchNPop: (value: object) => {
+            update((items) => {
+                for (const [key, val] of Object.entries(items)) {
+                    if (val == value) {
+                        delete items[key]
+                    }
+                }
+                return items
+            })
         }
     }
 }
